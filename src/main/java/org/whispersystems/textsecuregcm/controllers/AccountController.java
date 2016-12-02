@@ -32,6 +32,7 @@ import org.whispersystems.textsecuregcm.auth.InvalidAuthorizationHeaderException
 import org.whispersystems.textsecuregcm.auth.TurnToken;
 import org.whispersystems.textsecuregcm.auth.TurnTokenGenerator;
 import org.whispersystems.textsecuregcm.entities.AccountAttributes;
+import org.whispersystems.textsecuregcm.entities.AccountKeys;
 import org.whispersystems.textsecuregcm.entities.ApnRegistrationId;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
@@ -39,6 +40,7 @@ import org.whispersystems.textsecuregcm.providers.TimeProvider;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
 import org.whispersystems.textsecuregcm.sms.TwilioSmsSender;
 import org.whispersystems.textsecuregcm.storage.Account;
+import org.whispersystems.textsecuregcm.storage.Keys;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
 import org.whispersystems.textsecuregcm.storage.MessagesManager;
@@ -85,6 +87,7 @@ public class AccountController {
   private final Optional<AuthorizationTokenGenerator> tokenGenerator;
   private final TurnTokenGenerator                    turnTokenGenerator;
   private final Map<String, Integer>                  testDevices;
+  private final Keys                                  keys;
 
   public AccountController(PendingAccountsManager pendingAccounts,
                            AccountsManager accounts,
@@ -94,7 +97,8 @@ public class AccountController {
                            TimeProvider timeProvider,
                            Optional<byte[]> authorizationKey,
                            TurnTokenGenerator turnTokenGenerator,
-                           Map<String, Integer> testDevices)
+                           Map<String, Integer> testDevices,
+                           Keys keys)
   {
     this.pendingAccounts    = pendingAccounts;
     this.accounts           = accounts;
@@ -104,6 +108,7 @@ public class AccountController {
     this.timeProvider       = timeProvider;
     this.testDevices        = testDevices;
     this.turnTokenGenerator = turnTokenGenerator;
+    this.keys = keys;
 
     if (authorizationKey.isPresent()) {
       tokenGenerator = Optional.of(new AuthorizationTokenGenerator(authorizationKey.get()));
@@ -149,6 +154,48 @@ public class AccountController {
     }
 
     return Response.ok().build();
+  }
+
+  @Timed
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/key/{user_id}")
+  public void createAccountWithKeys(@PathParam("user_id") String userId,
+                            @HeaderParam("Authorization")   String authorizationHeader,
+                            @HeaderParam("X-Signal-Agent")  String userAgent,
+                            @Valid AccountKeys accountKeys)
+      throws IOException,RateLimitExceededException
+  {
+      //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
+      String number = accountKeys.getAddress();
+      String password = "random";
+      logger.info(number);
+
+      Device device = new Device();
+      device.setId(Device.MASTER_ID);
+      device.setAuthenticationCredentials(new AuthenticationCredentials(password));
+      //device.setSignalingKey(accountAttributes.getSignalingKey());
+      //device.setFetchesMessages(accountAttributes.getFetchesMessages());
+      //device.setRegistrationId(accountAttributes.getRegistrationId());
+      device.setName(userId);
+      device.setVoiceSupported(false);
+      device.setCreated(System.currentTimeMillis());
+      device.setLastSeen(Util.todayInMillis());
+      device.setUserAgent(userAgent);
+      device.setSignedPreKey(accountKeys.getPayload().getSignedPreKey());
+
+      Account account = new Account();
+      account.setNumber(number);
+      account.setIdentityKey(accountKeys.getPayload().getIdentityKey());
+      account.addDevice(device);
+
+      if (accounts.create(account)) {
+        newUserMeter.mark();
+      }
+
+      messagesManager.clear(number);
+
+      keys.store(account.getNumber(), device.getId(), accountKeys.getPayload().getPreKeys(), accountKeys.getPayload().getLastResortKey());
   }
 
   @Timed
