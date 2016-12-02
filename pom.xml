@@ -119,6 +119,27 @@
             </exclusions>
         </dependency>
 
+
+       <dependency>
+         <groupId>org.ethereum</groupId>
+         <artifactId>ethereumj-core</artifactId>
+         <version>1.3.1-RELEASE</version>
+          <exclusions>
+            <exclusion>
+                 <groupId>com.fasterxml.jackson.core</groupId>
+                 <artifactId>jackson-databind</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>org.slf4j</groupId>
+              <artifactId>slf4j-log4j12</artifactId>
+            </exclusion>
+            <exclusion>
+              <groupId>log4j</groupId>
+              <artifactId>log4j</artifactId>
+            </exclusion>
+          </exclusions> 
+       </dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -233,12 +254,11 @@
             <id>gcm-server-repository</id>
             <url>https://raw.github.com/whispersystems/maven/master/gcm-server/releases/</url>
         </repository>
-        <!--other repositories if any-->
-        <repository>
-            <id>project.local</id>
-            <name>project</name>
-            <url>file:${project.basedir}/repo</url>
-        </repository>
+       <repository>
+         <id>oss.jfrog.org</id>
+         <name>Repository from Bintray</name>
+         <url>http://dl.bintray.com/ethereum/maven</url>
+       </repository>
     </repositories>
 
 </project>
