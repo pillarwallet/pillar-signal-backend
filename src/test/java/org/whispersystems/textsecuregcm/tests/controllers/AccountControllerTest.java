@@ -19,6 +19,7 @@ import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.MessagesManager;
 import org.whispersystems.textsecuregcm.storage.PendingAccountsManager;
+import org.whispersystems.textsecuregcm.storage.Keys;
 import org.whispersystems.textsecuregcm.tests.util.AuthHelper;
 import org.whispersystems.textsecuregcm.util.SystemMapper;
 
@@ -44,6 +45,8 @@ public class AccountControllerTest {
   private        MessagesManager        storedMessages         = mock(MessagesManager.class       );
   private        TimeProvider           timeProvider           = mock(TimeProvider.class          );
   private        TurnTokenGenerator     turnTokenGenerator     = mock(TurnTokenGenerator.class);
+  private        Keys                   keys                   = mock(Keys.class);
+
   private static byte[]                 authorizationKey       = decodeHex("3a078586eea8971155f5c1ebd73c8c923cbec1c3ed22a54722e4e88321dc749f");
 
   @Rule
@@ -60,7 +63,8 @@ public class AccountControllerTest {
                                                                                                timeProvider,
                                                                                                Optional.of(authorizationKey),
                                                                                                turnTokenGenerator,
-                                                                                               new HashMap<String, Integer>()))
+                                                                                               new HashMap<String, Integer>(),
+                                                                                               keys))
                                                             .build();
 
 
