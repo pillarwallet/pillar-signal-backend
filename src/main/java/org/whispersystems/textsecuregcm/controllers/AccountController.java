@@ -32,7 +32,7 @@ import org.whispersystems.textsecuregcm.auth.InvalidAuthorizationHeaderException
 import org.whispersystems.textsecuregcm.auth.TurnToken;
 import org.whispersystems.textsecuregcm.auth.TurnTokenGenerator;
 import org.whispersystems.textsecuregcm.entities.AccountAttributes;
-import org.whispersystems.textsecuregcm.entities.AccountKeys;
+import org.whispersystems.textsecuregcm.entities.AccountBootstrap;
 import org.whispersystems.textsecuregcm.entities.ApnRegistrationId;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
@@ -159,15 +159,15 @@ public class AccountController {
   @Timed
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
-  @Path("/key/{user_id}")
-  public void createAccountWithKeys(@PathParam("user_id") String userId,
+  @Path("/bootstrap")
+  public void createAccountWithBootstrap(@PathParam("user_id") String userId,
                             @HeaderParam("Authorization")   String authorizationHeader,
                             @HeaderParam("X-Signal-Agent")  String userAgent,
-                            @Valid AccountKeys accountKeys)
-      throws IOException,RateLimitExceededException
+                            @Valid AccountBootstrap accountBootstrap)
+      throws IOException, RateLimitExceededException
   {
       //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
-      String number = accountKeys.getAddress();
+      String number = accountBootstrap.getAddress();
       String password = "random";
       logger.info(number);
 
@@ -182,11 +182,11 @@ public class AccountController {
       device.setCreated(System.currentTimeMillis());
       device.setLastSeen(Util.todayInMillis());
       device.setUserAgent(userAgent);
-      device.setSignedPreKey(accountKeys.getPayload().getSignedPreKey());
+      device.setSignedPreKey(accountBootstrap.getPayload().getSignedPreKey());
 
       Account account = new Account();
       account.setNumber(number);
-      account.setIdentityKey(accountKeys.getPayload().getIdentityKey());
+      account.setIdentityKey(accountBootstrap.getPayload().getIdentityKey());
       account.addDevice(device);
 
       if (accounts.create(account)) {
@@ -195,7 +195,7 @@ public class AccountController {
 
       messagesManager.clear(number);
 
-      keys.store(account.getNumber(), device.getId(), accountKeys.getPayload().getPreKeys(), accountKeys.getPayload().getLastResortKey());
+      keys.store(account.getNumber(), device.getId(), accountBootstrap.getPayload().getPreKeys(), accountBootstrap.getPayload().getLastResortKey());
   }
 
   @Timed

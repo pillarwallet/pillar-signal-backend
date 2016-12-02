@@ -9,7 +9,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-public class PreKeyStateV2Timestamped {
+public class AccountBootstrapPayload {
 
   @JsonProperty
   @NotEmpty
@@ -35,10 +35,10 @@ public class PreKeyStateV2Timestamped {
 
 
 
-  public PreKeyStateV2Timestamped() {}
+  public AccountBootstrapPayload() {}
 
   @VisibleForTesting
-  public PreKeyStateV2Timestamped(String identityKey, SignedPreKey signedPreKey,
+  public AccountBootstrapPayload(String identityKey, SignedPreKey signedPreKey,
                        List<PreKeyV2> keys, PreKeyV2 lastResortKey, long timestamp)
   {
     this.identityKey   = identityKey;

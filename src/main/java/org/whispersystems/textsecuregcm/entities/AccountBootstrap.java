@@ -14,16 +14,16 @@ import java.security.SignatureException;
 import org.spongycastle.util.encoders.Hex;
 
 
-public class AccountKeys {
+public class AccountBootstrap {
   @JsonProperty
-  private PreKeyStateV2Timestamped payload;
+  private AccountBootstrapPayload payload;
 
   @JsonProperty
   @NotEmpty
   private String signature;
 
-  public AccountKeys() {}
-  public AccountKeys(PreKeyStateV2Timestamped payload, String signature) {
+  public AccountBootstrap() {}
+  public AccountBootstrap(AccountBootstrapPayload payload, String signature) {
     this.payload = payload;
     this.signature = signature;
   }
@@ -32,7 +32,7 @@ public class AccountKeys {
     return signature;
   }
 
-  public PreKeyStateV2Timestamped getPayload() {
+  public AccountBootstrapPayload getPayload() {
     return payload;
   }
 
