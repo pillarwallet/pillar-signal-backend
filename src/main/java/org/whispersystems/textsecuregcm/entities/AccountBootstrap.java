@@ -43,7 +43,7 @@ public class AccountBootstrap {
     String signablePayload = mapper.writeValueAsString(payload);
 
     byte[] hash = sha3(signablePayload.getBytes());
-    byte[] sig = Hex.decode(signature);
+    byte[] sig = Hex.decode(signature.substring(2));
 
     byte[] r = new byte[32];
     System.arraycopy(sig, 0, r, 0, 32);

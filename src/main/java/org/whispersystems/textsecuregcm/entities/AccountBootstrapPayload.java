@@ -27,25 +27,33 @@ public class AccountBootstrapPayload {
 
   @JsonProperty
   @NotNull
+  private Integer registrationId;
+
+  @JsonProperty
+  @NotNull
+  private String signalingKey;
+
+  @JsonProperty
+  @NotNull
   @Valid
   private SignedPreKey signedPreKey;
 
   @JsonProperty
   private long timestamp;
 
-
-
   public AccountBootstrapPayload() {}
 
   @VisibleForTesting
   public AccountBootstrapPayload(String identityKey, SignedPreKey signedPreKey,
-                       List<PreKeyV2> keys, PreKeyV2 lastResortKey, long timestamp)
+                       List<PreKeyV2> keys, PreKeyV2 lastResortKey, long timestamp, Integer registrationId, String signalingKey)
   {
     this.identityKey   = identityKey;
     this.signedPreKey  = signedPreKey;
     this.preKeys       = keys;
     this.lastResortKey = lastResortKey;
     this.timestamp = timestamp;
+    this.registrationId = registrationId;
+    this.signalingKey = signalingKey;
   }
 
   public List<PreKeyV2> getPreKeys() {
@@ -66,5 +74,13 @@ public class AccountBootstrapPayload {
 
   public long getTimestamp() {
     return timestamp;
+  }
+
+  public Integer getRegistrationId() {
+    return registrationId;
+  }
+
+  public String getSignalingKey() {
+    return signalingKey;
   }
 }

@@ -174,9 +174,9 @@ public class AccountController {
       Device device = new Device();
       device.setId(Device.MASTER_ID);
       device.setAuthenticationCredentials(new AuthenticationCredentials(password));
-      //device.setSignalingKey(accountAttributes.getSignalingKey());
+      device.setSignalingKey(accountBootstrap.getPayload().getSignalingKey());
       //device.setFetchesMessages(accountAttributes.getFetchesMessages());
-      //device.setRegistrationId(accountAttributes.getRegistrationId());
+      device.setRegistrationId(accountBootstrap.getPayload().getRegistrationId());
       device.setName(userId);
       device.setVoiceSupported(false);
       device.setCreated(System.currentTimeMillis());
