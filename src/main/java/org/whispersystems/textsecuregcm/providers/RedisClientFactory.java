@@ -20,9 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.dispatch.io.RedisPubSubConnectionFactory;
 import org.whispersystems.dispatch.redis.PubSubConnection;
+import org.whispersystems.dispatch.io.RedisInputStream;
 import org.whispersystems.textsecuregcm.util.Util;
 
+
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,6 +34,7 @@ import java.net.URISyntaxException;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
+import redis.clients.util.JedisURIHelper;
 
 public class RedisClientFactory implements RedisPubSubConnectionFactory {
 
@@ -37,6 +42,7 @@ public class RedisClientFactory implements RedisPubSubConnectionFactory {
 
   private final String    host;
   private final int       port;
+  private final String    password;
   private final JedisPool jedisPool;
 
   public RedisClientFactory(String url) throws URISyntaxException {
@@ -47,8 +53,12 @@ public class RedisClientFactory implements RedisPubSubConnectionFactory {
 
     this.host      = redisURI.getHost();
     this.port      = redisURI.getPort();
-    this.jedisPool = new JedisPool(poolConfig, host, port,
-                                   Protocol.DEFAULT_TIMEOUT, null);
+    this.password = JedisURIHelper.getPassword(redisURI);
+    this.jedisPool = new JedisPool(poolConfig,
+            host,
+            port,
+            Protocol.DEFAULT_TIMEOUT,
+            password);
   }
 
   public JedisPool getRedisClientPool() {
@@ -60,6 +70,13 @@ public class RedisClientFactory implements RedisPubSubConnectionFactory {
     while (true) {
       try {
         Socket socket = new Socket(host, port);
+        OutputStream outputStream = socket.getOutputStream();
+        RedisInputStream inputStream = new RedisInputStream(new BufferedInputStream(socket.getInputStream()));
+        byte[] command = ("AUTH "+this.password+"\r\n").getBytes();
+        outputStream.write(command);
+        String result = inputStream.readLine();
+        logger.info(result);
+
         return new PubSubConnection(socket);
       } catch (IOException e) {
         logger.warn("Error connecting", e);
