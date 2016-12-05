@@ -22,6 +22,10 @@ public class AccountBootstrapPayload {
 
   @JsonProperty
   @NotNull
+  private String password;
+
+  @JsonProperty
+  @NotNull
   @Valid
   private List<PreKeyV2> preKeys;
 
@@ -44,8 +48,14 @@ public class AccountBootstrapPayload {
   public AccountBootstrapPayload() {}
 
   @VisibleForTesting
-  public AccountBootstrapPayload(String identityKey, SignedPreKey signedPreKey,
-                       List<PreKeyV2> keys, PreKeyV2 lastResortKey, long timestamp, Integer registrationId, String signalingKey)
+  public AccountBootstrapPayload(String identityKey,
+      SignedPreKey signedPreKey,
+      List<PreKeyV2> keys,
+      PreKeyV2 lastResortKey,
+      long timestamp,
+      Integer registrationId,
+      String signalingKey,
+      String password)
   {
     this.identityKey   = identityKey;
     this.signedPreKey  = signedPreKey;
@@ -54,6 +64,7 @@ public class AccountBootstrapPayload {
     this.timestamp = timestamp;
     this.registrationId = registrationId;
     this.signalingKey = signalingKey;
+    this.password = password;
   }
 
   public List<PreKeyV2> getPreKeys() {
@@ -82,5 +93,9 @@ public class AccountBootstrapPayload {
 
   public String getSignalingKey() {
     return signalingKey;
+  }
+
+  public String getPassword() {
+    return password;
   }
 }

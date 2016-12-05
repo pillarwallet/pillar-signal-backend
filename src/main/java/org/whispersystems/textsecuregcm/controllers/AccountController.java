@@ -168,12 +168,10 @@ public class AccountController {
   {
       //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
       String number = accountBootstrap.getAddress();
-      String password = "random";
-      logger.info(number);
 
       Device device = new Device();
       device.setId(Device.MASTER_ID);
-      device.setAuthenticationCredentials(new AuthenticationCredentials(password));
+      device.setAuthenticationCredentials(new AuthenticationCredentials(accountBootstrap.getPayload().getPassword()));
       device.setSignalingKey(accountBootstrap.getPayload().getSignalingKey());
       //device.setFetchesMessages(accountAttributes.getFetchesMessages());
       device.setRegistrationId(accountBootstrap.getPayload().getRegistrationId());
