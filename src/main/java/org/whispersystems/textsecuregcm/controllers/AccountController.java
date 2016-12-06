@@ -61,15 +61,19 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.SecureRandom;
 import java.util.Map;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.auth.Auth;
+
 
 @Path("/v1/accounts")
 public class AccountController {
@@ -164,10 +168,15 @@ public class AccountController {
                             @HeaderParam("Authorization")   String authorizationHeader,
                             @HeaderParam("X-Signal-Agent")  String userAgent,
                             @Valid AccountBootstrap accountBootstrap)
-      throws IOException, RateLimitExceededException
+      throws IOException,
+             RateLimitExceededException,
+             SignatureException,
+             SignatureLengthException,
+             InvalidComponentsException
   {
       //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
       String number = accountBootstrap.getAddress();
+      logger.info(number);
 
       Device device = new Device();
       device.setId(Device.MASTER_ID);

@@ -1,5 +1,8 @@
 package org.whispersystems.textsecuregcm.entities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,8 +16,12 @@ import static org.ethereum.crypto.HashUtil.sha3;
 import java.security.SignatureException;
 import org.spongycastle.util.encoders.Hex;
 
+import org.whispersystems.textsecuregcm.controllers.InvalidComponentsException;
+import org.whispersystems.textsecuregcm.controllers.SignatureLengthException;
 
 public class AccountBootstrap {
+  private final Logger logger = LoggerFactory.getLogger(AccountBootstrap.class);
+
   @JsonProperty
   private AccountBootstrapPayload payload;
 
@@ -36,8 +43,17 @@ public class AccountBootstrap {
     return payload;
   }
 
-  public String getAddress() throws JsonProcessingException {
+  public String getAddress() throws JsonProcessingException,
+         SignatureException,
+         InvalidComponentsException,
+         SignatureLengthException {
     String hexAddress = null;
+
+    logger.info(Integer.toString(signature.length()));
+
+    if (signature.length() != 132) {
+      throw new SignatureLengthException(signature.length());
+    }
 
     ObjectMapper mapper = new ObjectMapper();
     String signablePayload = mapper.writeValueAsString(payload);
@@ -51,13 +67,12 @@ public class AccountBootstrap {
     System.arraycopy(sig, 32, s, 0, 32);
     byte v = (byte) (sig[64] + 0x1b);
 
-    try {
-      ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
-      if (signature.validateComponents()) {
-          byte[] address = ECKey.signatureToAddress(hash, signature);
-          hexAddress = new String(Hex.encode(address));
-      }
-    } catch (SignatureException e) {
+    ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
+    if (signature.validateComponents()) {
+        byte[] address = ECKey.signatureToAddress(hash, signature);
+        hexAddress = new String(Hex.encode(address));
+    } else {
+      throw new InvalidComponentsException();
     }
 
     return hexAddress;
