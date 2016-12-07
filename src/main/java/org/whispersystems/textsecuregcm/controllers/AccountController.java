@@ -182,7 +182,7 @@ public class AccountController {
       device.setId(Device.MASTER_ID);
       device.setAuthenticationCredentials(new AuthenticationCredentials(accountBootstrap.getPayload().getPassword()));
       device.setSignalingKey(accountBootstrap.getPayload().getSignalingKey());
-      //device.setFetchesMessages(accountAttributes.getFetchesMessages());
+      device.setFetchesMessages(true);
       device.setRegistrationId(accountBootstrap.getPayload().getRegistrationId());
       device.setName(userId);
       device.setVoiceSupported(false);
