@@ -34,6 +34,8 @@ messageStore: # Postgres database configuration for message store
   user:
   password:
   url:
+  initialSize: 1
+  minSize: 1
   maxSize: 3
 
 database: # Postgres database configuration for account store
@@ -48,6 +50,8 @@ database: # Postgres database configuration for account store
 
   # the JDBC URL
   url:
+  initialSize: 1
+  minSize: 1
   maxSize: 3
 
   # any properties specific to your JDBC driver:
