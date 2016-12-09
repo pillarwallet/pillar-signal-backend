@@ -163,6 +163,7 @@ public class AccountController {
   @Timed
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   @Path("/bootstrap")
   public void createAccountWithBootstrap(@PathParam("user_id") String userId,
                             @HeaderParam("Authorization")   String authorizationHeader,
@@ -172,11 +173,17 @@ public class AccountController {
              RateLimitExceededException,
              SignatureException,
              SignatureLengthException,
+             InvalidEthAddressException,
              InvalidComponentsException
   {
       //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
-      String number = accountBootstrap.getAddress();
-      logger.info(number);
+      String number = accountBootstrap.getEthAddress();
+      String recoveredNumber = accountBootstrap.getRecoveredEthAddress();
+      logger.info("Expected eth address: " + number);
+      logger.info("Recovered eth address: " + recoveredNumber);
+      if (!number.equals(recoveredNumber)) {
+        throw new InvalidEthAddressException(number, recoveredNumber);
+      }
 
       Device device = new Device();
       device.setId(Device.MASTER_ID);

@@ -29,10 +29,15 @@ public class AccountBootstrap {
   @NotEmpty
   private String signature;
 
+  @JsonProperty
+  @NotEmpty
+  private String ethAddress;
+
   public AccountBootstrap() {}
-  public AccountBootstrap(AccountBootstrapPayload payload, String signature) {
+  public AccountBootstrap(AccountBootstrapPayload payload, String signature, String ethAddress) {
     this.payload = payload;
     this.signature = signature;
+    this.ethAddress = ethAddress;
   }
 
   public String getSignature() {
@@ -42,14 +47,16 @@ public class AccountBootstrap {
   public AccountBootstrapPayload getPayload() {
     return payload;
   }
+  public String getEthAddress() {
+    return ethAddress;
+  }
 
-  public String getAddress() throws JsonProcessingException,
+  public String getRecoveredEthAddress() throws JsonProcessingException,
          SignatureException,
          InvalidComponentsException,
          SignatureLengthException {
     String hexAddress = null;
 
-    logger.info(Integer.toString(signature.length()));
 
     if (signature.length() != 132) {
       throw new SignatureLengthException(signature.length());
@@ -57,6 +64,7 @@ public class AccountBootstrap {
 
     ObjectMapper mapper = new ObjectMapper();
     String signablePayload = mapper.writeValueAsString(payload);
+    logger.info(signablePayload);
 
     byte[] hash = sha3(signablePayload.getBytes());
     byte[] sig = Hex.decode(signature.substring(2));
