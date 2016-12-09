@@ -70,3 +70,39 @@ turn:
   secret: none
   uris:
    - none
+
+
+limits:
+  smsDestination:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  voiceDestination:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  voiceDestinationDaily:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  verifyNumber:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  attachments:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  contactQueries:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  prekeys:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  messages:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  allocateDevice:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  verifyDevice:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
+  turnAllocations:
+    bucketSize: 50000
+    leakRatePerMinute: 50000
