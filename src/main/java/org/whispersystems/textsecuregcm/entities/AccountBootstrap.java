@@ -31,13 +31,13 @@ public class AccountBootstrap {
 
   @JsonProperty
   @NotEmpty
-  private String ethAddress;
+  private String address;
 
   public AccountBootstrap() {}
-  public AccountBootstrap(AccountBootstrapPayload payload, String signature, String ethAddress) {
+  public AccountBootstrap(AccountBootstrapPayload payload, String signature, String address) {
     this.payload = payload;
     this.signature = signature;
-    this.ethAddress = ethAddress;
+    this.address = address;
   }
 
   public String getSignature() {
@@ -47,8 +47,8 @@ public class AccountBootstrap {
   public AccountBootstrapPayload getPayload() {
     return payload;
   }
-  public String getEthAddress() {
-    return ethAddress;
+  public String getAddress() {
+    return address;
   }
 
   public String getRecoveredEthAddress() throws JsonProcessingException,

@@ -177,7 +177,7 @@ public class AccountController {
              InvalidComponentsException
   {
       //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
-      String number = accountBootstrap.getEthAddress();
+      String number = accountBootstrap.getAddress();
       String recoveredNumber = accountBootstrap.getRecoveredEthAddress();
       logger.info("Expected eth address: " + number);
       logger.info("Recovered eth address: " + recoveredNumber);
