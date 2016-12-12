@@ -1,0 +1,12 @@
+machine:
+  node:
+    version: 6.7.0
+dependencies:
+  post:
+    - npm install -g aglio
+deployment:
+  development:
+    branch: master
+    commands:
+      - git clone --depth 1 git@github.com:tokenbrowser/docs.git $HOME/docs
+      - $HOME/docs/deploy-blueprint.sh $CIRCLE_PROJECT_REPONAME docs/api.apib $CIRCLE_SHA1

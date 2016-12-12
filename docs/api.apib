@@ -1,0 +1,206 @@
+FORMAT: 1A
+HOST: https://chat.tokenbrowser.com/
+
+# Chat Service
+
+Chat allows for the sending of messages, encrypted with Signal protocol, between individuals. This can be messages relayed between users, or between an app and a user.
+Messages are sent via the Signal service.
+
+# Group Accounts
+
+## Bootstrapped Account Creation [/v1/accounts/bootstrap/]
+
+### Create Account from bootstrap payload  [PUT]
+
+You can register a new user in one step using this method (bypassing SMS verification roundtrip). 
+Bootstrap payload contains keys, account attributes, and when combined with the signature, ethereum address via ECDSA key recovery. There is no need to provide a user identifier because the signature fulfils the same purpose.
+    
++ Request (application/json)
+
+        {
+          "payload": {
+            "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
+            "lastResortKey": {
+              "keyId": uniqueInteger,
+              "publicKey": "publicKeyOfLastResortKey"
+            },
+            "password": "password",
+            "preKeys": [
+              {
+                "keyId": uniqueInteger,
+                "publicKey": "publicKeyOfThisPreKey"
+              },
+              (...)
+            ],
+            "registrationId": integer,
+            "signalingKey": "Random52ByteString",
+            "signedPreKey": {
+              "keyId": uniqueId,
+              "publicKey": "signedPreKeyPublicKey",
+              "signature": "signedPreKeySignature"
+            },
+            "timestamp": currentTime
+          },
+          "address": "ethereum address",
+          "signature": "whole payload structure signed by clients private key"
+        }
+
++ Response 204 (application/json)
+
+
+### Get server timestamp for bootstrap request  [GET]
+Use this value to predict the correct timestamp to use when sending a `PUT /v1/accounts/bootstrap/` request,
+to avoid erroneous rejection due to clock desync between client and server.
++ Response 204 (application/json)
+{
+ "timestamp": 1480925071798
+}
+
+
+
+## Account Attributes [/v1/accounts/attributes]
+### Set attributes on account [PUT]
+
+
+
+# Group Messaging
+
+## Message [/v1/messages/{destination}]
++ Parameters
+    + destination (string) - Ethereum address of message recipient
+### Send message [PUT]
+
+## Pending Messages Collection [/v1/messages]
+### Get pending messages [GET]
+
+## Pending Message [/v1/messages/{source}/{timestamp}]
++ Parameters
+    + source (string) - Ethereum address of sender
+    + timestamp (number) - timestamp of pending message
+### Delete pending message [DELETE]
+
+## Delivery Receipt [/v1/receipt/{destination}/{message_id}]
++ Parameters
+    + destination (string) - Ethereum address of message recipient
+    + message_id (number) - ID of message
+### Send delivery receipt [PUT]
+
+## Attachments Collection [/v1/attachments]
+### Allocate attachment [GET]
+
+## Attachment [/v1/attachments/{attachment_id}]
++ Parameters
+    + attachment_id (number) - ID of attachment
+### Redirect To Attachment [GET]
+
+
+
+# Group Push Notifications
+
+## APN Push Service Registration [/v1/accounts/apn/]
+Apple Push Notification Service
+### Set APN registration id [PUT]
+### Delete APN registration id [DELETE]
+
+## GCM Push Service Registration [/v1/accounts/gcm/]
+Google Cloud Messaging
+### Set GCM registration id [PUT]
+### Delete GCM registration id [DELETE]
+
+
+# Group Devices
+
+## Devices Collection [/v1/devices/]
+### Get list of devices [GET]
+
+## Device [/v1/devices/{device_id}]
++ Parameters
+    + device_id (number) - ID of the device
+### Delete device from account [DELETE]
+
+
+
+
+# Group Keys
+
+## Keys Collection [/v2/keys]
+### Get count of PreKeys [GET]
+### Set keys [PUT]
+
+## Signed Key [/v2/keys/signed]
+### Set signed key [PUT]
+### Get signed key [GET]
+
+## PreKeyBundle [/v2/keys/{eth_address}/{device_id}]
++ Parameters
+    + eth_address (string) - Ethereum address of message recipient
+    + device_id (number) - ID of device. Wildcard '*' can (and should) be used in place of targeting a specific device in most cases.
+### Get bundle for any user [GET]
+
+
+
+
+# Group Usage Notes
+
+## Generating signatures
+
+When registering keys, the payload must be signed to prove ownership of the associated ethereum address. The source data for the signature is the json representation of the keys plus a timestamp with all keys sorted alphabetically by name, and all non-value whitespace removed. 
+
+If your payload is this:
+
+        {
+            "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
+            "lastResortKey": {
+              "keyId": 1,
+              "publicKey": "publicKeyOfLastResortKey"
+            },
+            "password": "password",
+            "preKeys": [
+              {
+                "keyId": 2,
+                "publicKey": "publicKeyOfThisPreKey"
+              }
+            ],
+            "registrationId": 123,
+            "signalingKey": "Random52ByteString",
+            "signedPreKey": {
+              "keyId": 3,
+              "publicKey": "signedPreKeyPublicKey",
+              "signature": "signedPreKeySignature"
+            },
+            "timestamp": 1234567890
+        }
+        
+It becomes this for signing:
+
+        {"identityKey":"BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR","lastResortKey":{"keyId":1,"publicKey":"publicKeyOfLastResortKey"},"password":"password","preKeys":[{"keyId":2,"publicKey":"publicKeyOfThisPreKey"}],"registrationId":123,"signalingKey":"Random52ByteString","signedPreKey":{"keyId":3,"publicKey":"signedPreKeyPublicKey","signature":"signedPreKeySignature"},"timestamp":1234567890}
+
+This data is then SHA3 Hashed (Keccak-256) and signed with the owners private key using recoverable ECDSA. Finally the resulting signature is serialised and converted to a hex string.
+
+In this example the final content sent with the SHA3-256 signature is:
+
+        {
+          "payload": {
+                "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
+                "lastResortKey": {
+                  "keyId": 1,
+                  "publicKey": "publicKeyOfLastResortKey"
+                },
+                "password": "password",
+                "preKeys": [
+                  {
+                    "keyId": 2,
+                    "publicKey": "publicKeyOfThisPreKey"
+                  }
+                ],
+                "registrationId": 123,
+                "signalingKey": "Random52ByteString",
+                "signedPreKey": {
+                  "keyId": 3,
+                  "publicKey": "signedPreKeyPublicKey",
+                  "signature": "signedPreKeySignature"
+                },
+                "timestamp": 1234567890
+            },
+            some missing fields"signature": "0xc39a479a92fe8d626324ff82a33684610ecd6b50714f59542a1ea558220ec6246a9193dd481078417b3b44d55933989587459d3dd50295d4da67d6580ac8646801"
+        }
