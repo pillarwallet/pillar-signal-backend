@@ -1,7 +1,7 @@
 FORMAT: 1A
-HOST: https://chat.tokenbrowser.com/
+HOST: https://chat.tokenbrowser.com
 
-# Chat Service
+# Token Chat Service
 
 Chat allows for the sending of messages, encrypted with Signal protocol, between individuals. This can be messages relayed between users, or between an app and a user.
 Messages are sent via the Signal service.
@@ -12,9 +12,9 @@ Messages are sent via the Signal service.
 
 ### Create Account from bootstrap payload  [PUT]
 
-You can register a new user in one step using this method (bypassing SMS verification roundtrip). 
+You can register a new user in one step using this method (bypassing SMS verification roundtrip).
 Bootstrap payload contains keys, account attributes, and when combined with the signature, ethereum address via ECDSA key recovery. There is no need to provide a user identifier because the signature fulfils the same purpose.
-    
+
 + Request (application/json)
 
         {
@@ -148,59 +148,66 @@ When registering keys, the payload must be signed to prove ownership of the asso
 
 If your payload is this:
 
-        {
-            "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
-            "lastResortKey": {
-              "keyId": 1,
-              "publicKey": "publicKeyOfLastResortKey"
-            },
-            "password": "password",
-            "preKeys": [
-              {
-                "keyId": 2,
-                "publicKey": "publicKeyOfThisPreKey"
-              }
-            ],
-            "registrationId": 123,
-            "signalingKey": "Random52ByteString",
-            "signedPreKey": {
-              "keyId": 3,
-              "publicKey": "signedPreKeyPublicKey",
-              "signature": "signedPreKeySignature"
-            },
-            "timestamp": 1234567890
-        }
-        
+```json
+{
+    "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
+    "lastResortKey": {
+      "keyId": 1,
+      "publicKey": "publicKeyOfLastResortKey"
+    },
+    "password": "password",
+    "preKeys": [
+      {
+        "keyId": 2,
+        "publicKey": "publicKeyOfThisPreKey"
+      }
+    ],
+    "registrationId": 123,
+    "signalingKey": "Random52ByteString",
+    "signedPreKey": {
+      "keyId": 3,
+      "publicKey": "signedPreKeyPublicKey",
+      "signature": "signedPreKeySignature"
+    },
+    "timestamp": 1234567890
+}
+```
+
 It becomes this for signing:
 
-        {"identityKey":"BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR","lastResortKey":{"keyId":1,"publicKey":"publicKeyOfLastResortKey"},"password":"password","preKeys":[{"keyId":2,"publicKey":"publicKeyOfThisPreKey"}],"registrationId":123,"signalingKey":"Random52ByteString","signedPreKey":{"keyId":3,"publicKey":"signedPreKeyPublicKey","signature":"signedPreKeySignature"},"timestamp":1234567890}
+```json
+{"identityKey":"BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR","lastResortKey":{"keyId":1,"publicKey":"publicKeyOfLastResortKey"},"password":"password","preKeys":[{"keyId":2,"publicKey":"publicKeyOfThisPreKey"}],"registrationId":123,"signalingKey":"Random52ByteString","signedPreKey":{"keyId":3,"publicKey":"signedPreKeyPublicKey","signature":"signedPreKeySignature"},"timestamp":1234567890}
+```
 
 This data is then SHA3 Hashed (Keccak-256) and signed with the owners private key using recoverable ECDSA. Finally the resulting signature is serialised and converted to a hex string.
 
 In this example the final content sent with the SHA3-256 signature is:
 
-        {
-          "payload": {
-                "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
-                "lastResortKey": {
-                  "keyId": 1,
-                  "publicKey": "publicKeyOfLastResortKey"
-                },
-                "password": "password",
-                "preKeys": [
-                  {
-                    "keyId": 2,
-                    "publicKey": "publicKeyOfThisPreKey"
-                  }
-                ],
-                "registrationId": 123,
-                "signalingKey": "Random52ByteString",
-                "signedPreKey": {
-                  "keyId": 3,
-                  "publicKey": "signedPreKeyPublicKey",
-                  "signature": "signedPreKeySignature"
-                },
-                "timestamp": 1234567890
-            },
-            some missing fields"signature": "0xc39a479a92fe8d626324ff82a33684610ecd6b50714f59542a1ea558220ec6246a9193dd481078417b3b44d55933989587459d3dd50295d4da67d6580ac8646801"
-        }
+```json
+{
+  "payload": {
+    "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
+    "lastResortKey": {
+      "keyId": 1,
+      "publicKey": "publicKeyOfLastResortKey"
+    },
+    "password": "password",
+    "preKeys": [
+      {
+        "keyId": 2,
+        "publicKey": "publicKeyOfThisPreKey"
+      }
+    ],
+    "registrationId": 123,
+    "signalingKey": "Random52ByteString",
+    "signedPreKey": {
+      "keyId": 3,
+      "publicKey": "signedPreKeyPublicKey",
+      "signature": "signedPreKeySignature"
+    },
+    "timestamp": 1234567890
+    },
+  "address": "your ethereum address",
+  "signature": "0xc39a479a92fe8d626324ff82a33684610ecd6b50714f59542a1ea558220ec6246a9193dd481078417b3b44d55933989587459d3dd50295d4da67d6580ac8646801"
+}
+```
