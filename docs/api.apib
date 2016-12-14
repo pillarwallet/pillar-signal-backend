@@ -60,7 +60,42 @@ to avoid erroneous rejection due to clock desync between client and server.
 
 ## Account Attributes [/v1/accounts/attributes]
 ### Set attributes on account [PUT]
++ Request (application/json)
 
+    + Headers
+
+            Authorization: 
+            X-Signal-Agent: 
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "signalingKey": {
+                  "type": "string"
+                },
+                "fetchesMessages": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "registrationId": {
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "voice": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
 
 
 # Group Messaging
@@ -69,9 +104,180 @@ to avoid erroneous rejection due to clock desync between client and server.
 + Parameters
     + destination (string) - Ethereum address of message recipient
 ### Send message [PUT]
++ Request (application/json)
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
+            {
+              "messages": [
+                {
+                  "timestamp": 17884000,
+                  "destinationRegistrationId": 39167258,
+                  "content": "irure aliquip minim sed",
+                  "body": "aliquip ea",
+                  "destinationDeviceId": -14766533,
+                  "relay": "est",
+                  "destination": "dolore ut dolor sunt",
+                  "type": -15267097
+                },
+                {
+                  "content": "laborum",
+                  "timestamp": -35314861,
+                  "relay": "Lorem amet",
+                  "destinationRegistrationId": 68353787,
+                  "destinationDeviceId": 75332158,
+                  "destination": "ut dolore"
+                }
+              ]
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "messages"
+              ],
+              "properties": {
+                "messages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "destination": {
+                        "type": "string"
+                      },
+                      "destinationDeviceId": {
+                        "type": "integer",
+                        "format": "int64"
+                      },
+                      "destinationRegistrationId": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "body": {
+                        "type": "string"
+                      },
+                      "content": {
+                        "type": "string"
+                      },
+                      "relay": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "integer",
+                        "format": "int64"
+                      }
+                    }
+                  }
+                },
+                "relay": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "type": "integer",
+                  "format": "int64"
+                }
+              }
+            }
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "needsSync": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
 
 ## Pending Messages Collection [/v1/messages]
 ### Get pending messages [GET]
++ Request
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "messages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "relay": {
+                        "type": "string"
+                      },
+                      "timestamp": {
+                        "type": "integer",
+                        "format": "int64"
+                      },
+                      "source": {
+                        "type": "string"
+                      },
+                      "sourceDevice": {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      "message": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "byte"
+                        }
+                      },
+                      "content": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "format": "byte"
+                        }
+                      }
+                    }
+                  }
+                },
+                "more": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
 
 ## Pending Message [/v1/messages/{source}/{timestamp}]
 + Parameters
@@ -87,11 +293,73 @@ to avoid erroneous rejection due to clock desync between client and server.
 
 ## Attachments Collection [/v1/attachments]
 ### Allocate attachment [GET]
++ Request
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "location": {
+                  "type": "string"
+                }
+              }
+            }
 
 ## Attachment [/v1/attachments/{attachment_id}]
 + Parameters
     + attachment_id (number) - ID of attachment
 ### Redirect To Attachment [GET]
++ Parameters
+    + attachmentId (required)
+    + relay
+
++ Request
+    + Headers
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {
+              "location": "do in"
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string"
+                }
+              }
+            }
 
 
 
@@ -100,11 +368,59 @@ to avoid erroneous rejection due to clock desync between client and server.
 ## APN Push Service Registration [/v1/accounts/apn/]
 Apple Push Notification Service
 ### Set APN registration id [PUT]
+
++ Request (application/json)
+  + Headers
+    Authorization:
+  + Body
+    {
+    "apnRegistrationId": "in quis"
+    }
+
+  + Schema
+    {
+      "type": "object",
+      "properties": {
+        "apnRegistrationId": {
+          "type": "string"
+        },
+        "voipRegistrationId": {
+          "type": "string"
+        }
+      }
+    }
+
 ### Delete APN registration id [DELETE]
 
 ## GCM Push Service Registration [/v1/accounts/gcm/]
 Google Cloud Messaging
 ### Set GCM registration id [PUT]
++ Request (application/json)
+
+    + Headers
+
+            Authorization: 
+
+    + Body
+
+            {
+              "webSocketChannel": false
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "gcmRegistrationId": {
+                  "type": "string"
+                },
+                "webSocketChannel": {
+                  "type": "boolean",
+                  "default": false
+                }
+              }
+            }
 ### Delete GCM registration id [DELETE]
 
 
@@ -125,17 +441,242 @@ Google Cloud Messaging
 
 ## Keys Collection [/v2/keys]
 ### Get count of PreKeys [GET]
++ Request
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object",
+              "properties": {
+                "count": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
 ### Set keys [PUT]
++ Request (application/json)
+
+    + Headers
+
+            Authorization: 
+
+    + Body
+
+            {
+              "lastResortKey": {
+                "keyId": -28579668
+              },
+              "preKeys": [
+                {
+                  "keyId": -81338653
+                },
+                {
+                  "keyId": -26773841
+                },
+                {
+                  "keyId": -9396493
+                },
+                {
+                  "keyId": 15463664,
+                  "publicKey": "elit"
+                },
+                {
+                  "keyId": -98227863
+                }
+              ],
+              "signedPreKey": {
+                "keyId": -77033897
+              }
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "lastResortKey",
+                "preKeys",
+                "signedPreKey"
+              ],
+              "properties": {
+                "preKeys": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "keyId"
+                    ],
+                    "properties": {
+                      "keyId": {
+                        "type": "integer",
+                        "format": "int64"
+                      },
+                      "publicKey": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "signedPreKey": {
+                  "type": "object",
+                  "required": [
+                    "keyId"
+                  ],
+                  "properties": {
+                    "keyId": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "publicKey": {
+                      "type": "string"
+                    },
+                    "signature": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "lastResortKey": {
+                  "type": "object",
+                  "required": [
+                    "keyId"
+                  ],
+                  "properties": {
+                    "keyId": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "publicKey": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "identityKey": {
+                  "type": "string"
+                }
+              }
+            }
 
 ## Signed Key [/v2/keys/signed]
-### Set signed key [PUT]
 ### Get signed key [GET]
++ Request
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {
+              "keyId": 52662686
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "keyId"
+              ],
+              "properties": {
+                "keyId": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "publicKey": {
+                  "type": "string"
+                },
+                "signature": {
+                  "type": "string"
+                }
+              }
+            }
+
+### Set signed key [PUT]
++ Request (application/json)
+
+    + Headers
+
+            Authorization: 
+
+    + Body
+
+            {
+              "keyId": -4546692,
+              "signature": "cupidatat"
+            }
+
+    + Schema
+
+            {
+              "type": "object",
+              "required": [
+                "keyId"
+              ],
+              "properties": {
+                "keyId": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "publicKey": {
+                  "type": "string"
+                },
+                "signature": {
+                  "type": "string"
+                }
+              }
+            }
+
 
 ## PreKeyBundle [/v2/keys/{eth_address}/{device_id}]
 + Parameters
     + eth_address (string) - Ethereum address of message recipient
     + device_id (number) - ID of device. Wildcard '*' can (and should) be used in place of targeting a specific device in most cases.
 ### Get bundle for any user [GET]
++ Request
+
+    + Headers
+
+            Accept: application/json
+            Authorization: 
+
+    + Body
+
++ Response 200 (application/json)
+
+    successful operation
+
+    + Body
+
+            {}
+
+    + Schema
+
+            {
+              "type": "object"
+            }
 
 
 
