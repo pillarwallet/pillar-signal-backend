@@ -78,7 +78,7 @@ public class AccountBootstrap {
     ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
     if (signature.validateComponents()) {
         byte[] address = ECKey.signatureToAddress(hash, signature);
-        hexAddress = new String(Hex.encode(address));
+        hexAddress = "0x"+new String(Hex.encode(address));
     } else {
       throw new InvalidComponentsException();
     }

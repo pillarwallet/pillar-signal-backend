@@ -13,7 +13,7 @@ Messages are sent via the Signal service.
 ### Create Account from bootstrap payload  [PUT]
 
 You can register a new user in one step using this method (bypassing SMS verification roundtrip).
-Bootstrap payload contains keys, account attributes, and when combined with the signature, ethereum address via ECDSA key recovery. There is no need to provide a user identifier because the signature fulfils the same purpose.
+Bootstrap payload contains keys, account attributes, and when combined with the signature, ethereum address via ECDSA key recovery. Address and signature fields are hex encoded and should include a '0x' prefix.
 
 + Request (application/json)
 
@@ -41,7 +41,7 @@ Bootstrap payload contains keys, account attributes, and when combined with the 
             },
             "timestamp": currentUnixTime
           },
-          "address": "ethereum address",
+          "address": "0x33a37590055b981824ecb28354f3581fe463662e",
           "signature": "whole payload structure signed by clients private key"
         }
 
