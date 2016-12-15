@@ -39,7 +39,7 @@ Bootstrap payload contains keys, account attributes, and when combined with the 
               "publicKey": "signedPreKeyPublicKey",
               "signature": "signedPreKeySignature"
             },
-            "timestamp": currentTime
+            "timestamp": currentUnixTime
           },
           "address": "ethereum address",
           "signature": "whole payload structure signed by clients private key"
@@ -51,9 +51,9 @@ Bootstrap payload contains keys, account attributes, and when combined with the 
 ### Get server timestamp for bootstrap request  [GET]
 Use this value to predict the correct timestamp to use when sending a `PUT /v1/accounts/bootstrap/` request,
 to avoid erroneous rejection due to clock desync between client and server.
-+ Response 204 (application/json)
++ Response 200 (application/json)
 {
- "timestamp": 1480925071798
+ "timestamp": 1481792827
 }
 
 

@@ -93,6 +93,8 @@ public class AccountController {
   private final Map<String, Integer>                  testDevices;
   private final Keys                                  keys;
 
+  private static final long TIMESTAMP_EXPIRY = 15;
+
   public AccountController(PendingAccountsManager pendingAccounts,
                            AccountsManager accounts,
                            RateLimiters rateLimiters,
@@ -160,6 +162,17 @@ public class AccountController {
     return Response.ok().build();
   }
 
+
+  @Timed
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("/bootstrap")
+  public Response getTimestamp()
+  {
+    String json = "{\"timestamp\": "+String.valueOf(getServerTime())+" }";
+    return Response.ok(json, MediaType.APPLICATION_JSON).build();
+  }
+
   @Timed
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
@@ -174,9 +187,14 @@ public class AccountController {
              SignatureException,
              SignatureLengthException,
              InvalidEthAddressException,
-             InvalidComponentsException
+             InvalidComponentsException,
+             ExpiredTimestampException
   {
-      //private void createAccount(String number, String password, String userAgent, AccountAttributes accountAttributes) {
+      long desync = Math.abs(accountBootstrap.getPayload().getTimestamp() - getServerTime());
+      if (desync >= TIMESTAMP_EXPIRY) {
+        throw new ExpiredTimestampException(desync);
+      }
+
       String number = accountBootstrap.getAddress();
       String recoveredNumber = accountBootstrap.getRecoveredEthAddress();
       logger.info("Expected eth address: " + number);
@@ -407,6 +425,10 @@ public class AccountController {
 
     messagesManager.clear(number);
     pendingAccounts.remove(number);
+  }
+
+  private long getServerTime() {
+    return System.currentTimeMillis() / 1000L;
   }
 
   @VisibleForTesting protected VerificationCode generateVerificationCode(String number) {
