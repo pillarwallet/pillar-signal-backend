@@ -4,6 +4,8 @@ machine:
   node:
     version: 6.7.0
 dependencies:
+  pre:
+    - sudo rsync -r --include=*/ --include=*.jar --exclude=* .jdk-overlay/jre $JAVA_HOME
   post:
     - npm install -g aglio
 deployment:
