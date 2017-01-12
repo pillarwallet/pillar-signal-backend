@@ -24,6 +24,7 @@ import com.google.common.base.Optional;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.skife.jdbi.v2.DBI;
 import org.whispersystems.dispatch.DispatchChannel;
 import org.whispersystems.dispatch.DispatchManager;
@@ -266,6 +267,8 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     environment.jersey().register(new InvalidWebsocketAddressExceptionMapper());
     environment.jersey().register(new DeviceLimitExceededExceptionMapper());
     environment.jersey().register(new AccountPayloadExceptionMapper());
+
+    environment.jersey().register(LoggingFilter.class);
 
     environment.metrics().register(name(CpuUsageGauge.class, "cpu"), new CpuUsageGauge());
     environment.metrics().register(name(FreeMemoryGauge.class, "free_memory"), new FreeMemoryGauge());
