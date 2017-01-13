@@ -93,7 +93,7 @@ public class AccountController {
   private final Map<String, Integer>                  testDevices;
   private final Keys                                  keys;
 
-  private static final long TIMESTAMP_EXPIRY = 15;
+  private static final long TIMESTAMP_EXPIRY = 180;
 
   public AccountController(PendingAccountsManager pendingAccounts,
                            AccountsManager accounts,
