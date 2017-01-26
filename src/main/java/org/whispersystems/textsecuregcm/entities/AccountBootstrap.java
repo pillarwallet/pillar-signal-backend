@@ -10,6 +10,10 @@ import com.google.common.annotations.VisibleForTesting;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
 import org.ethereum.crypto.ECKey;
 import org.ethereum.crypto.ECKey.ECDSASignature;
 import static org.ethereum.crypto.HashUtil.sha3;
@@ -23,67 +27,82 @@ public class AccountBootstrap {
   private final Logger logger = LoggerFactory.getLogger(AccountBootstrap.class);
 
   @JsonProperty
-  private AccountBootstrapPayload payload;
+  @NotEmpty
+  private String identityKey;
 
   @JsonProperty
-  @NotEmpty
-  private String signature;
+  @NotNull
+  @Valid
+  private PreKeyV2 lastResortKey;
 
   @JsonProperty
-  @NotEmpty
-  private String address;
+  @NotNull
+  private String password;
+
+  @JsonProperty
+  @NotNull
+  @Valid
+  private List<PreKeyV2> preKeys;
+
+  @JsonProperty
+  @NotNull
+  private Integer registrationId;
+
+  @JsonProperty
+  @NotNull
+  private String signalingKey;
+
+  @JsonProperty
+  @NotNull
+  @Valid
+  private SignedPreKey signedPreKey;
 
   public AccountBootstrap() {}
-  public AccountBootstrap(AccountBootstrapPayload payload, String signature, String address) {
-    this.payload = payload;
-    this.signature = signature;
-    this.address = address;
+
+  @VisibleForTesting
+  public AccountBootstrap(String identityKey,
+      SignedPreKey signedPreKey,
+      List<PreKeyV2> keys,
+      PreKeyV2 lastResortKey,
+      Integer registrationId,
+      String signalingKey,
+      String password)
+  {
+    this.identityKey   = identityKey;
+    this.signedPreKey  = signedPreKey;
+    this.preKeys       = keys;
+    this.lastResortKey = lastResortKey;
+    this.registrationId = registrationId;
+    this.signalingKey = signalingKey;
+    this.password = password;
   }
 
-  public String getSignature() {
-    return signature;
+  public List<PreKeyV2> getPreKeys() {
+    return preKeys;
   }
 
-  public AccountBootstrapPayload getPayload() {
-    return payload;
-  }
-  public String getAddress() {
-    return address;
+  public SignedPreKey getSignedPreKey() {
+    return signedPreKey;
   }
 
-  public String getRecoveredEthAddress() throws JsonProcessingException,
-         SignatureException,
-         InvalidComponentsException,
-         SignatureLengthException {
-    String hexAddress = null;
+  public String getIdentityKey() {
+    return identityKey;
+  }
 
+  public PreKeyV2 getLastResortKey() {
+    return lastResortKey;
+  }
 
-    if (signature.length() != 132) {
-      throw new SignatureLengthException(signature.length());
-    }
+  public Integer getRegistrationId() {
+    return registrationId;
+  }
 
-    ObjectMapper mapper = new ObjectMapper();
-    String signablePayload = mapper.writeValueAsString(payload);
-    logger.info(signablePayload);
+  public String getSignalingKey() {
+    return signalingKey;
+  }
 
-    byte[] hash = sha3(signablePayload.getBytes());
-    byte[] sig = Hex.decode(signature.substring(2));
-
-    byte[] r = new byte[32];
-    System.arraycopy(sig, 0, r, 0, 32);
-    byte[] s = new byte[32];
-    System.arraycopy(sig, 32, s, 0, 32);
-    byte v = (byte) (sig[64] + 0x1b);
-
-    ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
-    if (signature.validateComponents()) {
-        byte[] address = ECKey.signatureToAddress(hash, signature);
-        hexAddress = "0x"+new String(Hex.encode(address));
-    } else {
-      throw new InvalidComponentsException();
-    }
-
-    return hexAddress;
+  public String getPassword() {
+    return password;
   }
 
 }

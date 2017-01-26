@@ -71,6 +71,17 @@ import java.security.SignatureException;
 import java.security.SecureRandom;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.ethereum.crypto.ECKey;
+import org.ethereum.crypto.ECKey.ECDSASignature;
+import static org.ethereum.crypto.HashUtil.sha3;
+import org.spongycastle.util.encoders.Hex;
+import org.spongycastle.jcajce.provider.digest.Keccak.DigestKeccak;
+import org.spongycastle.jcajce.provider.digest.Keccak.Digest256;
+import java.util.Base64;
+
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.auth.Auth;
 
@@ -181,44 +192,54 @@ public class AccountController {
   public void createAccountWithBootstrap(@PathParam("user_id") String userId,
                             @HeaderParam("Authorization")   String authorizationHeader,
                             @HeaderParam("X-Signal-Agent")  String userAgent,
-                            @Valid AccountBootstrap accountBootstrap)
+                            @HeaderParam("Token-Timestamp")  long timestamp,
+                            @HeaderParam("Token-Signature")  String signature,
+                            @HeaderParam("Token-ID-Address")  String idAddress,
+                            String body)
       throws IOException,
              RateLimitExceededException,
              SignatureException,
              SignatureLengthException,
              InvalidEthAddressException,
              InvalidComponentsException,
+             JsonProcessingException,
              ExpiredTimestampException
   {
-      long desync = Math.abs(accountBootstrap.getPayload().getTimestamp() - getServerTime());
+
+
+      long desync = Math.abs(timestamp - getServerTime());
       if (desync >= TIMESTAMP_EXPIRY) {
         throw new ExpiredTimestampException(desync);
       }
 
-      String number = accountBootstrap.getAddress();
-      String recoveredNumber = accountBootstrap.getRecoveredEthAddress();
+      String number = idAddress;
+      String recoveredNumber = getRecoveredEthAddress("PUT", "/v1/accounts/bootstrap", body, String.valueOf(timestamp), signature);
       logger.info("Expected eth address: " + number);
       logger.info("Recovered eth address: " + recoveredNumber);
+
       if (!number.equals(recoveredNumber)) {
         throw new InvalidEthAddressException(number, recoveredNumber);
       }
 
+      ObjectMapper mapper = new ObjectMapper();
+      AccountBootstrap accountBootstrap = mapper.readValue(body, AccountBootstrap.class);
+
       Device device = new Device();
       device.setId(Device.MASTER_ID);
-      device.setAuthenticationCredentials(new AuthenticationCredentials(accountBootstrap.getPayload().getPassword()));
-      device.setSignalingKey(accountBootstrap.getPayload().getSignalingKey());
+      device.setAuthenticationCredentials(new AuthenticationCredentials(accountBootstrap.getPassword()));
+      device.setSignalingKey(accountBootstrap.getSignalingKey());
       device.setFetchesMessages(true);
-      device.setRegistrationId(accountBootstrap.getPayload().getRegistrationId());
+      device.setRegistrationId(accountBootstrap.getRegistrationId());
       device.setName(userId);
       device.setVoiceSupported(false);
       device.setCreated(System.currentTimeMillis());
       device.setLastSeen(Util.todayInMillis());
       device.setUserAgent(userAgent);
-      device.setSignedPreKey(accountBootstrap.getPayload().getSignedPreKey());
+      device.setSignedPreKey(accountBootstrap.getSignedPreKey());
 
       Account account = new Account();
       account.setNumber(number);
-      account.setIdentityKey(accountBootstrap.getPayload().getIdentityKey());
+      account.setIdentityKey(accountBootstrap.getIdentityKey());
       account.addDevice(device);
 
       if (accounts.create(account)) {
@@ -227,7 +248,7 @@ public class AccountController {
 
       messagesManager.clear(number);
 
-      keys.store(account.getNumber(), device.getId(), accountBootstrap.getPayload().getPreKeys(), accountBootstrap.getPayload().getLastResortKey());
+      keys.store(account.getNumber(), device.getId(), accountBootstrap.getPreKeys(), accountBootstrap.getLastResortKey());
   }
 
   @Timed
@@ -430,6 +451,46 @@ public class AccountController {
   private long getServerTime() {
     return System.currentTimeMillis() / 1000L;
   }
+
+
+
+  public String getRecoveredEthAddress(String verb, String path, String body, String timestamp, String rawSignature) throws JsonProcessingException,
+         SignatureException,
+         InvalidComponentsException,
+         SignatureLengthException {
+    String hexAddress = null;
+
+    if (rawSignature.length() != 132) {
+      throw new SignatureLengthException(rawSignature.length());
+    }
+
+    final DigestKeccak keccak = new Digest256();
+    keccak.update(body.getBytes());
+    byte[] hash = keccak.digest();
+    byte[] encodedHashBytes = Base64.getEncoder().encode(hash);
+    String encodedHash = new String(encodedHashBytes);
+    String payload = verb+"\n"+path+"\n"+timestamp+"\n"+encodedHash;
+
+    byte[] payloadHash = sha3(payload.getBytes());
+    byte[] sig = Hex.decode(rawSignature.substring(2));
+
+    byte[] r = new byte[32];
+    System.arraycopy(sig, 0, r, 0, 32);
+    byte[] s = new byte[32];
+    System.arraycopy(sig, 32, s, 0, 32);
+    byte v = (byte) (sig[64] + 0x1b);
+
+    ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
+    if (signature.validateComponents()) {
+        byte[] address = ECKey.signatureToAddress(payloadHash, signature);
+        hexAddress = "0x"+new String(Hex.encode(address));
+    } else {
+      throw new InvalidComponentsException();
+    }
+
+    return hexAddress;
+  }
+
 
   @VisibleForTesting protected VerificationCode generateVerificationCode(String number) {
     try {

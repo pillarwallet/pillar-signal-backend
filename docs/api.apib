@@ -18,7 +18,6 @@ Bootstrap payload contains keys, account attributes, and when combined with the 
 + Request (application/json)
 
         {
-          "payload": {
             "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
             "lastResortKey": {
               "keyId": uniqueInteger,
@@ -38,11 +37,7 @@ Bootstrap payload contains keys, account attributes, and when combined with the 
               "keyId": uniqueId,
               "publicKey": "signedPreKeyPublicKey",
               "signature": "signedPreKeySignature"
-            },
-            "timestamp": currentUnixTime
-          },
-          "address": "0x33a37590055b981824ecb28354f3581fe463662e",
-          "signature": "whole payload structure signed by clients private key"
+            }
         }
 
 + Response 204 (application/json)
@@ -677,78 +672,3 @@ Google Cloud Messaging
             {
               "type": "object"
             }
-
-
-
-
-# Group Usage Notes
-
-## Generating signatures
-
-When registering keys, the payload must be signed to prove ownership of the associated ethereum address. The source data for the signature is the json representation of the keys plus a timestamp with all keys sorted alphabetically by name, and all non-value whitespace removed. 
-
-If your payload is this:
-
-```json
-{
-    "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
-    "lastResortKey": {
-      "keyId": 1,
-      "publicKey": "publicKeyOfLastResortKey"
-    },
-    "password": "password",
-    "preKeys": [
-      {
-        "keyId": 2,
-        "publicKey": "publicKeyOfThisPreKey"
-      }
-    ],
-    "registrationId": 123,
-    "signalingKey": "Random52ByteString",
-    "signedPreKey": {
-      "keyId": 3,
-      "publicKey": "signedPreKeyPublicKey",
-      "signature": "signedPreKeySignature"
-    },
-    "timestamp": 1234567890
-}
-```
-
-It becomes this for signing:
-
-```json
-{"identityKey":"BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR","lastResortKey":{"keyId":1,"publicKey":"publicKeyOfLastResortKey"},"password":"password","preKeys":[{"keyId":2,"publicKey":"publicKeyOfThisPreKey"}],"registrationId":123,"signalingKey":"Random52ByteString","signedPreKey":{"keyId":3,"publicKey":"signedPreKeyPublicKey","signature":"signedPreKeySignature"},"timestamp":1234567890}
-```
-
-This data is then SHA3 Hashed (Keccak-256) and signed with the owners private key using recoverable ECDSA. Finally the resulting signature is serialised and converted to a hex string.
-
-In this example the final content sent with the SHA3-256 signature is:
-
-```json
-{
-  "payload": {
-    "identityKey": "BY10yMjz6aXkFkgimjLbBoP\/NvyrppofUmTrMqhuGPAR",
-    "lastResortKey": {
-      "keyId": 1,
-      "publicKey": "publicKeyOfLastResortKey"
-    },
-    "password": "password",
-    "preKeys": [
-      {
-        "keyId": 2,
-        "publicKey": "publicKeyOfThisPreKey"
-      }
-    ],
-    "registrationId": 123,
-    "signalingKey": "Random52ByteString",
-    "signedPreKey": {
-      "keyId": 3,
-      "publicKey": "signedPreKeyPublicKey",
-      "signature": "signedPreKeySignature"
-    },
-    "timestamp": 1234567890
-    },
-  "address": "your ethereum address",
-  "signature": "0xc39a479a92fe8d626324ff82a33684610ecd6b50714f59542a1ea558220ec6246a9193dd481078417b3b44d55933989587459d3dd50295d4da67d6580ac8646801"
-}
-```
