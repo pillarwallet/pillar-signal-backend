@@ -254,6 +254,54 @@ public class AccountController {
   @Timed
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/")
+  public void createSimpleAccount(@HeaderParam("Authorization")   String authorizationHeader,
+                            @HeaderParam("X-Signal-Agent")  String userAgent,
+                            @HeaderParam("Token-Timestamp")  long timestamp,
+                            @HeaderParam("Token-Signature")  String signature,
+                            @HeaderParam("Token-ID-Address")  String idAddress,
+                            String body)
+      throws RateLimitExceededException,
+             IOException,
+             JsonProcessingException,
+             SignatureException,
+             InvalidComponentsException,
+             SignatureLengthException,
+             InvalidEthAddressException
+  {
+    try {
+      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+      String number              = header.getNumber();
+      String password            = header.getPassword();
+
+      ObjectMapper mapper = new ObjectMapper();
+      AccountAttributes accountAttributes = mapper.readValue(body, AccountAttributes.class);
+
+      rateLimiters.getVerifyLimiter().validate(number);
+
+      String recoveredNumber = getRecoveredEthAddress("PUT", "/v1/accounts/", body, String.valueOf(timestamp), signature);
+      logger.info("Expected eth address: " + idAddress);
+      logger.info("Recovered eth address: " + recoveredNumber);
+
+      if (!idAddress.equals(recoveredNumber)) {
+        throw new InvalidEthAddressException(idAddress, recoveredNumber);
+      }
+
+      if (accounts.isRelayListed(number)) {
+        throw new WebApplicationException(Response.status(417).build());
+      }
+
+      createAccount(number, password, userAgent, accountAttributes);
+    } catch (InvalidAuthorizationHeaderException e) {
+      logger.info("Bad Authorization Header", e);
+      throw new WebApplicationException(Response.status(401).build());
+    }
+  }
+
+
+  @Timed
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
   @Path("/code/{verification_code}")
   public void verifyAccount(@PathParam("verification_code") String verificationCode,
                             @HeaderParam("Authorization")   String authorizationHeader,
@@ -453,7 +501,6 @@ public class AccountController {
   }
 
 
-
   public String getRecoveredEthAddress(String verb, String path, String body, String timestamp, String rawSignature) throws JsonProcessingException,
          SignatureException,
          InvalidComponentsException,
@@ -490,7 +537,6 @@ public class AccountController {
 
     return hexAddress;
   }
-
 
   @VisibleForTesting protected VerificationCode generateVerificationCode(String number) {
     try {
