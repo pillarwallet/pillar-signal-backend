@@ -71,6 +71,17 @@ import java.security.SignatureException;
 import java.security.SecureRandom;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.ethereum.crypto.ECKey;
+import org.ethereum.crypto.ECKey.ECDSASignature;
+import static org.ethereum.crypto.HashUtil.sha3;
+import org.spongycastle.util.encoders.Hex;
+import org.spongycastle.jcajce.provider.digest.Keccak.DigestKeccak;
+import org.spongycastle.jcajce.provider.digest.Keccak.Digest256;
+import java.util.Base64;
+
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.auth.Auth;
 
@@ -229,6 +240,54 @@ public class AccountController {
 
       keys.store(account.getNumber(), device.getId(), accountBootstrap.getPayload().getPreKeys(), accountBootstrap.getPayload().getLastResortKey());
   }
+
+  @Timed
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Path("/")
+  public void createSimpleAccount(@HeaderParam("Authorization")   String authorizationHeader,
+                            @HeaderParam("X-Signal-Agent")  String userAgent,
+                            @HeaderParam("Token-Timestamp")  long timestamp,
+                            @HeaderParam("Token-Signature")  String signature,
+                            @HeaderParam("Token-ID-Address")  String idAddress,
+                            String body)
+      throws RateLimitExceededException,
+             IOException,
+             JsonProcessingException,
+             SignatureException,
+             InvalidComponentsException,
+             SignatureLengthException,
+             InvalidEthAddressException
+  {
+    try {
+      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+      String number              = header.getNumber();
+      String password            = header.getPassword();
+
+      ObjectMapper mapper = new ObjectMapper();
+      AccountAttributes accountAttributes = mapper.readValue(body, AccountAttributes.class);
+
+      rateLimiters.getVerifyLimiter().validate(number);
+
+      String recoveredNumber = getRecoveredEthAddress("PUT", "/v1/accounts/", body, String.valueOf(timestamp), signature);
+      logger.info("Expected eth address: " + idAddress);
+      logger.info("Recovered eth address: " + recoveredNumber);
+
+      if (!idAddress.equals(recoveredNumber)) {
+        throw new InvalidEthAddressException(idAddress, recoveredNumber);
+      }
+
+      if (accounts.isRelayListed(number)) {
+        throw new WebApplicationException(Response.status(417).build());
+      }
+
+      createAccount(number, password, userAgent, accountAttributes);
+    } catch (InvalidAuthorizationHeaderException e) {
+      logger.info("Bad Authorization Header", e);
+      throw new WebApplicationException(Response.status(401).build());
+    }
+  }
+
 
   @Timed
   @PUT
@@ -429,6 +488,44 @@ public class AccountController {
 
   private long getServerTime() {
     return System.currentTimeMillis() / 1000L;
+  }
+
+
+  public String getRecoveredEthAddress(String verb, String path, String body, String timestamp, String rawSignature) throws JsonProcessingException,
+         SignatureException,
+         InvalidComponentsException,
+         SignatureLengthException {
+    String hexAddress = null;
+
+    if (rawSignature.length() != 132) {
+      throw new SignatureLengthException(rawSignature.length());
+    }
+
+    final DigestKeccak keccak = new Digest256();
+    keccak.update(body.getBytes());
+    byte[] hash = keccak.digest();
+    byte[] encodedHashBytes = Base64.getEncoder().encode(hash);
+    String encodedHash = new String(encodedHashBytes);
+    String payload = verb+"\n"+path+"\n"+timestamp+"\n"+encodedHash;
+
+    byte[] payloadHash = sha3(payload.getBytes());
+    byte[] sig = Hex.decode(rawSignature.substring(2));
+
+    byte[] r = new byte[32];
+    System.arraycopy(sig, 0, r, 0, 32);
+    byte[] s = new byte[32];
+    System.arraycopy(sig, 32, s, 0, 32);
+    byte v = (byte) (sig[64] + 0x1b);
+
+    ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
+    if (signature.validateComponents()) {
+        byte[] address = ECKey.signatureToAddress(payloadHash, signature);
+        hexAddress = "0x"+new String(Hex.encode(address));
+    } else {
+      throw new InvalidComponentsException();
+    }
+
+    return hexAddress;
   }
 
   @VisibleForTesting protected VerificationCode generateVerificationCode(String number) {

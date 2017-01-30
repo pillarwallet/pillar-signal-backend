@@ -8,12 +8,36 @@ Messages are sent via the Signal service.
 
 # Group Accounts
 
+## Account Creation [/v1/accounts/]
+
+### Create Account [PUT]
+Creates an account from account attributes, and when combined with the signature, ethereum address via ECDSA key recovery.
+
+A guide to generating the Token-* headers can be found [here](https://www.tokenbrowser.com/docs/token-services-lib/#header-generating-signatures)
+
++ Headers
+        Authorization: 
+        X-Signal-Agent: 
+        Token-Timestamp: 
+        Token-Signature: 
+        Token-ID-Address: 
+
++ Request (application/json)
+
+        {
+          "signalingKey": "...",
+          "fetchesMessages": true,
+          "registrationId": 1049,
+          "name": null,
+          "voice": false
+        }
+
+
 ## Bootstrapped Account Creation [/v1/accounts/bootstrap/]
 
 ### Create Account from bootstrap payload  [PUT]
 
-You can register a new user in one step using this method (bypassing SMS verification roundtrip).
-Bootstrap payload contains keys, account attributes, and when combined with the signature, ethereum address via ECDSA key recovery. Address and signature fields are hex encoded and should include a '0x' prefix.
+Creates an account and provisions it with prekeys.
 
 + Request (application/json)
 
