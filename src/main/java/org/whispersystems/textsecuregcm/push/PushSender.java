@@ -126,11 +126,15 @@ public class PushSender implements Managed {
   }
 
   private void sendApnMessage(Account account, Device device, Envelope outgoingMessage) {
+    logger.info("Sending APN Message to: "+account.getNumber());
     DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, outgoingMessage, WebsocketSender.Type.APN);
 
     if (!deliveryStatus.isDelivered() && outgoingMessage.getType() != Envelope.Type.RECEIPT) {
+      logger.info("Sending APN push notification, because websocket delivery failed");
       boolean fallback = !outgoingMessage.getSource().equals(account.getNumber());
       sendApnNotification(account, device, deliveryStatus.getMessageQueueDepth(), fallback);
+    } else {
+      logger.info("Not sending APN push notification, because websocket delivery succeeded");
     }
   }
 
@@ -138,6 +142,7 @@ public class PushSender implements Managed {
     ApnMessage apnMessage;
 
     if (!Util.isEmpty(device.getVoipApnId())) {
+      logger.info("Using VOIP APN");
       apnMessage = new ApnMessage(device.getVoipApnId(), account.getNumber(), (int)device.getId(),
                                   String.format(APN_PAYLOAD, messageQueueDepth),
                                   true, System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30));
@@ -147,6 +152,7 @@ public class PushSender implements Managed {
                                     new ApnFallbackTask(device.getApnId(), apnMessage));
       }
     } else {
+      logger.info("Using non-VOIP APN");
       apnMessage = new ApnMessage(device.getApnId(), account.getNumber(), (int)device.getId(),
                                   String.format(APN_PAYLOAD, messageQueueDepth),
                                   false, ApnMessage.MAX_EXPIRATION);

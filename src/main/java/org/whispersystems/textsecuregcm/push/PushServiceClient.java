@@ -57,6 +57,7 @@ public class PushServiceClient {
 
   private void sendPush(String path, Object entity) throws TransientPushFailureException {
     try {
+      logger.info("Submitting to PushServer");
       Response response = client.target("http://" + host + ":" + port)
                                 .path(path)
                                 .request()
