@@ -3,11 +3,17 @@ machine:
     version: oraclejdk8
   node:
     version: 6.7.0
+  environment:
+    PATH: "${PATH}:${HOME}/.yarn/bin"
+
 dependencies:
+  cache_directories:
+    - ${HOME}/.yarn
   pre:
     - sudo rsync -r --include=*/ --include=*.jar --exclude=* .jdk-overlay/jre $JAVA_HOME
   post:
-    - npm install -g aglio
+    - yarn global --cache-folder ${HOME}/.yarn/cache add aglio --prefix ${HOME}/.yarn
+
 deployment:
   development:
     branch: master
