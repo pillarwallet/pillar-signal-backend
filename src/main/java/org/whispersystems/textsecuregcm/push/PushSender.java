@@ -41,7 +41,8 @@ public class PushSender implements Managed {
 
   private final Logger logger = LoggerFactory.getLogger(PushSender.class);
 
-  private static final String APN_PAYLOAD = "{\"aps\":{\"content-available\":1}, \"type\": \"signal_message\", \"unread\": %d}";
+  //private static final String APN_PAYLOAD = "{\"aps\":{\"content-available\":1}, \"type\": \"signal_message\", \"unread\": %d}";
+  private static final String APN_PAYLOAD = "{\"aps\":{\"content-available\":1,\"sound\":\"default\",\"badge\":%d,\"alert\":{\"loc-key\":\"APN_Message\"}}}";
 
   private final ApnFallbackManager         apnFallbackManager;
   private final PushServiceClient          pushServiceClient;
@@ -141,7 +142,9 @@ public class PushSender implements Managed {
   private void sendApnNotification(Account account, Device device, int messageQueueDepth, boolean fallback) {
     ApnMessage apnMessage;
 
-    if (!Util.isEmpty(device.getVoipApnId())) {
+    //because there are no VOIP features enabled in iOS client
+    //we are not permitted to use VOIP PNs
+    if (false) {// !Util.isEmpty(device.getVoipApnId())) {
       logger.info("Using VOIP APN");
       apnMessage = new ApnMessage(device.getVoipApnId(), account.getNumber(), (int)device.getId(),
                                   String.format(APN_PAYLOAD, messageQueueDepth),
