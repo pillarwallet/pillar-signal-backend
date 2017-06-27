@@ -105,7 +105,7 @@ public class WebSocketConnection implements DispatchChannel {
     try {
       EncryptedOutgoingMessage                   encryptedMessage = new EncryptedOutgoingMessage(message, device.getSignalingKey());
       Optional<byte[]>                           body             = Optional.fromNullable(encryptedMessage.toByteArray());
-      ListenableFuture<WebSocketResponseMessage> response         = client.sendRequest("PUT", "/api/v1/message", body);
+      ListenableFuture<WebSocketResponseMessage> response         = client.sendRequest("PUT", "/api/v1/message", null, body);
 
       Futures.addCallback(response, new FutureCallback<WebSocketResponseMessage>() {
         @Override
@@ -141,7 +141,7 @@ public class WebSocketConnection implements DispatchChannel {
 
   private void requeueMessage(Envelope message) {
     int     queueDepth = pushSender.getWebSocketSender().queueMessage(account, device, message);
-    boolean fallback   = !message.getSource().equals(account.getNumber());
+    boolean fallback   = !message.getSource().equals(account.getNumber()) && message.getType() != Envelope.Type.RECEIPT;
 
     try {
       pushSender.sendQueuedNotification(account, device, queueDepth, fallback);
@@ -189,6 +189,10 @@ public class WebSocketConnection implements DispatchChannel {
       }
 
       sendMessage(builder.build(), Optional.of(message.getId()), !iterator.hasNext() && messages.hasMore());
+    }
+
+    if (!messages.hasMore()) {
+      client.sendRequest("PUT", "/api/v1/queue/empty", null, Optional.<byte[]>absent());
     }
   }
 }

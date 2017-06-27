@@ -5,11 +5,8 @@ twilio: # Twilio SMS gateway configuration
    - 1234567890
   localDomain: # The domain Twilio can call back to.
 
-push: # GCM/APN push server configuration
-  host: none
-  port: 1234
-  username: none
-  password: none
+push:
+  queueSize: # Size of push pending queue
 
 s3: # AWS S3 configuration
   accessKey: none
@@ -25,9 +22,6 @@ directory: # Redis server configuration for TS directory
 
 cache: # Redis server configuration for general purpose caching
   url:
-
-websocket:
-  enabled: true
 
 messageStore: # Postgres database configuration for message store
   driverClass: org.postgresql.Driver
@@ -70,3 +64,12 @@ turn:
   secret: none
   uris:
    - none
+
+apn: # Apple Push Notifications configuration
+  bundleId:
+  pushCertificate:
+  pushKey:
+
+gcm: # GCM Configuration
+  senderId:
+  apiKey:

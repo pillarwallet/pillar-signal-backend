@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.annotations.VisibleForTesting;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -23,6 +24,8 @@ import org.spongycastle.util.encoders.Hex;
 import org.whispersystems.textsecuregcm.controllers.InvalidComponentsException;
 import org.whispersystems.textsecuregcm.controllers.SignatureLengthException;
 
+// NOTE: lastResortKey is depreciated, using this so we don't fail if clients include it
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AccountBootstrap {
   private final Logger logger = LoggerFactory.getLogger(AccountBootstrap.class);
 
@@ -32,17 +35,12 @@ public class AccountBootstrap {
 
   @JsonProperty
   @NotNull
-  @Valid
-  private PreKeyV2 lastResortKey;
-
-  @JsonProperty
-  @NotNull
   private String password;
 
   @JsonProperty
   @NotNull
   @Valid
-  private List<PreKeyV2> preKeys;
+  private List<PreKey> preKeys;
 
   @JsonProperty
   @NotNull
@@ -62,8 +60,7 @@ public class AccountBootstrap {
   @VisibleForTesting
   public AccountBootstrap(String identityKey,
       SignedPreKey signedPreKey,
-      List<PreKeyV2> keys,
-      PreKeyV2 lastResortKey,
+      List<PreKey> keys,
       Integer registrationId,
       String signalingKey,
       String password)
@@ -71,13 +68,12 @@ public class AccountBootstrap {
     this.identityKey   = identityKey;
     this.signedPreKey  = signedPreKey;
     this.preKeys       = keys;
-    this.lastResortKey = lastResortKey;
     this.registrationId = registrationId;
     this.signalingKey = signalingKey;
     this.password = password;
   }
 
-  public List<PreKeyV2> getPreKeys() {
+  public List<PreKey> getPreKeys() {
     return preKeys;
   }
 
@@ -87,10 +83,6 @@ public class AccountBootstrap {
 
   public String getIdentityKey() {
     return identityKey;
-  }
-
-  public PreKeyV2 getLastResortKey() {
-    return lastResortKey;
   }
 
   public Integer getRegistrationId() {

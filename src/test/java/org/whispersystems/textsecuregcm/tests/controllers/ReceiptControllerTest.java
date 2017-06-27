@@ -18,8 +18,6 @@ import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
 import org.whispersystems.textsecuregcm.tests.util.AuthHelper;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,12 +51,12 @@ public class ReceiptControllerTest  {
   @Before
   public void setup() throws Exception {
     Set<Device> singleDeviceList = new HashSet<Device>() {{
-      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 111, null, System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
+      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 111, null, System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
     }};
 
     Set<Device> multiDeviceList = new HashSet<Device>() {{
-      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 222, null, System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
-      add(new Device(2, null, "foo", "bar", "baz", "isgcm", null, null, false, 333, null, System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
+      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 222, null, System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
+      add(new Device(2, null, "foo", "bar", "baz", "isgcm", null, null, false, 333, null, System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
     }};
 
     Account singleDeviceAccount = new Account(SINGLE_DEVICE_RECIPIENT, singleDeviceList);
@@ -80,7 +78,7 @@ public class ReceiptControllerTest  {
 
     assertThat(response.getStatus() == 204);
 
-    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class));
+    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(true));
   }
 
   @Test
@@ -95,7 +93,7 @@ public class ReceiptControllerTest  {
 
     assertThat(response.getStatus() == 204);
 
-    verify(pushSender, times(2)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class));
+    verify(pushSender, times(2)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(true));
   }
 
 

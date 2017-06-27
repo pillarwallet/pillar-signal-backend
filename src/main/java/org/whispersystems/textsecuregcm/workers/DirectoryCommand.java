@@ -63,7 +63,7 @@ public class DirectoryCommand extends EnvironmentCommand<WhisperServerConfigurat
     try {
       environment.getObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-      DataSourceFactory dbConfig = configuration.getDataSourceFactory();
+      DataSourceFactory dbConfig = configuration.getReadDataSourceFactory();
       DBI               dbi      = new DBI(dbConfig.getUrl(), dbConfig.getUser(), dbConfig.getPassword());
 
       dbi.registerArgumentFactory(new OptionalArgumentFactory(dbConfig.getDriverClass()));
@@ -88,8 +88,8 @@ public class DirectoryCommand extends EnvironmentCommand<WhisperServerConfigurat
       logger.warn("Directory Exception", ex);
       throw new RuntimeException(ex);
     } finally {
-      Thread.sleep(3000);
-      System.exit(0);
+//      Thread.sleep(3000);
+//      System.exit(0);
     }
   }
 }

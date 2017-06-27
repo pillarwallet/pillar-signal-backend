@@ -3,13 +3,11 @@ twilio: # Twilio SMS gateway configuration
   accountToken:
   numbers:
    - 1234567890
+  messagingServicesId:
   localDomain: # The domain Twilio can call back to.
 
-push: # GCM/APN push server configuration
-  host: none
-  port: 1234
-  username: none
-  password: none
+push:
+  queueSize: # Size of push pending queue
 
 s3: # AWS S3 configuration
   accessKey: none
@@ -20,16 +18,13 @@ s3: # AWS S3 configuration
   # correct permissions.
   attachmentsBucket: none
 
-directory: # Redis server configuration for TS directory
+cache: # Redis server configuration for cache cluster
   url:
 
-cache: # Redis server configuration for general purpose caching
+directory: # Redis server configuration for directory cluster
   url:
 
-websocket:
-  enabled: true
-
-messageStore: # Postgres database configuration for message store
+messageStore: # Postgresql database configuration for message store
   driverClass: org.postgresql.Driver
   user:
   password:
@@ -38,16 +33,13 @@ messageStore: # Postgres database configuration for message store
   minSize: 1
   maxSize: 3
 
-database: # Postgres database configuration for account store
-  # the name of your JDBC driver
+s3: # AWS S3 configuration
+  accessKey:
+  accessSecret:
+  attachmentsBucket:
+
+database: # Postgresql database configuration
   driverClass: org.postgresql.Driver
-
-  # the username
-  user:
-
-  # the password
-  password:
-
   # the JDBC URL
   url:
   initialSize: 1
@@ -70,3 +62,12 @@ turn:
   secret: none
   uris:
    - none
+
+apn: # Apple Push Notifications configuration
+  bundleId:
+  pushCertificate:
+  pushKey:
+
+gcm: # GCM Configuration
+  senderId:
+  apiKey:
