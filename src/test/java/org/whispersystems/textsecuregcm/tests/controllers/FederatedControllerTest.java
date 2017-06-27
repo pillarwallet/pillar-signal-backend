@@ -10,12 +10,12 @@ import org.junit.Test;
 import org.whispersystems.dropwizard.simpleauth.AuthValueFactoryProvider;
 import org.whispersystems.textsecuregcm.controllers.FederationControllerV1;
 import org.whispersystems.textsecuregcm.controllers.FederationControllerV2;
-import org.whispersystems.textsecuregcm.controllers.KeysControllerV2;
+import org.whispersystems.textsecuregcm.controllers.KeysController;
 import org.whispersystems.textsecuregcm.controllers.MessageController;
 import org.whispersystems.textsecuregcm.entities.IncomingMessageList;
 import org.whispersystems.textsecuregcm.entities.MessageProtos;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponseItemV2;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponseV2;
+import org.whispersystems.textsecuregcm.entities.PreKeyResponseItem;
+import org.whispersystems.textsecuregcm.entities.PreKeyResponse;
 import org.whispersystems.textsecuregcm.entities.SignedPreKey;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
@@ -58,19 +58,19 @@ public class FederatedControllerTest {
   private RateLimiter            rateLimiter            = mock(RateLimiter.class           );
 
   private final SignedPreKey signedPreKey = new SignedPreKey(3333, "foo", "baar");
-  private final PreKeyResponseV2 preKeyResponseV2 = new PreKeyResponseV2("foo", new LinkedList<PreKeyResponseItemV2>());
+  private final PreKeyResponse preKeyResponseV2 = new PreKeyResponse("foo", new LinkedList<PreKeyResponseItem>());
 
   private final ObjectMapper mapper = new ObjectMapper();
 
   private final MessageController messageController = new MessageController(rateLimiters, pushSender, receiptSender, accountsManager, messagesManager, federatedClientManager);
-  private final KeysControllerV2  keysControllerV2  = mock(KeysControllerV2.class);
+  private final KeysController    keysControllerV2  = mock(KeysController.class);
 
   @Rule
   public final ResourceTestRule resources = ResourceTestRule.builder()
                                                             .addProvider(AuthHelper.getAuthFilter())
                                                             .addProvider(new AuthValueFactoryProvider.Binder())
                                                             .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
-                                                            .addResource(new FederationControllerV1(accountsManager, null, messageController, null))
+                                                            .addResource(new FederationControllerV1(accountsManager, null, messageController))
                                                             .addResource(new FederationControllerV2(accountsManager, null, messageController, keysControllerV2))
                                                             .build();
 
@@ -79,12 +79,12 @@ public class FederatedControllerTest {
   @Before
   public void setup() throws Exception {
     Set<Device> singleDeviceList = new HashSet<Device>() {{
-      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 111, new SignedPreKey(111, "foo", "bar"), System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
+      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 111, new SignedPreKey(111, "foo", "bar"), System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
     }};
 
     Set<Device> multiDeviceList = new HashSet<Device>() {{
-      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 222, new SignedPreKey(222, "baz", "boop"), System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
-      add(new Device(2, null, "foo", "bar", "baz", "isgcm", null, null, false, 333, new SignedPreKey(333, "rad", "mad"), System.currentTimeMillis(), System.currentTimeMillis(), false, "Test"));
+      add(new Device(1, null, "foo", "bar", "baz", "isgcm", null, null, false, 222, new SignedPreKey(222, "baz", "boop"), System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
+      add(new Device(2, null, "foo", "bar", "baz", "isgcm", null, null, false, 333, new SignedPreKey(333, "rad", "mad"), System.currentTimeMillis(), System.currentTimeMillis(), false, false, "Test"));
     }};
 
     Account singleDeviceAccount = new Account(SINGLE_DEVICE_RECIPIENT, singleDeviceList);
@@ -112,17 +112,17 @@ public class FederatedControllerTest {
 
     assertThat("Good Response", response.getStatus(), is(equalTo(204)));
 
-    verify(pushSender).sendMessage(any(Account.class), any(Device.class), any(MessageProtos.Envelope.class));
+    verify(pushSender).sendMessage(any(Account.class), any(Device.class), any(MessageProtos.Envelope.class), eq(false));
   }
 
   @Test
   public void testSignedPreKeyV2() throws Exception {
-    PreKeyResponseV2 response =
+    PreKeyResponse response =
         resources.getJerseyTest()
                  .target("/v2/federation/key/+14152223333/1")
                  .request()
                  .header("Authorization", AuthHelper.getAuthHeader("cyanogen", "foofoo"))
-                 .get(PreKeyResponseV2.class);
+                 .get(PreKeyResponse.class);
 
     assertThat("good response", response.getIdentityKey().equals(preKeyResponseV2.getIdentityKey()));
   }

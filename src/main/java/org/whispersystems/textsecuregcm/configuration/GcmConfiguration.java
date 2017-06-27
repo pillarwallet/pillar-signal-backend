@@ -38,4 +38,5 @@ public class GcmConfiguration {
   public long getSenderId() {
     return senderId;
   }
+
 }

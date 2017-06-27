@@ -24,17 +24,32 @@ public class ApnConfiguration {
 
   @NotEmpty
   @JsonProperty
-  private String certificate;
+  private String pushCertificate;
 
   @NotEmpty
   @JsonProperty
-  private String key;
+  private String pushKey;
 
-  public String getCertificate() {
-    return certificate;
+  @NotEmpty
+  @JsonProperty
+  private String bundleId;
+
+  @JsonProperty
+  private boolean sandbox = false;
+
+  public String getPushCertificate() {
+    return pushCertificate;
   }
 
-  public String getKey() {
-    return key;
+  public String getPushKey() {
+    return pushKey;
+  }
+
+  public String getBundleId() {
+    return bundleId;
+  }
+
+  public boolean isSandboxEnabled() {
+    return sandbox;
   }
 }

@@ -17,8 +17,10 @@
 package org.whispersystems.textsecuregcm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.whispersystems.textsecuregcm.configuration.ApnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.FederationConfiguration;
-import org.whispersystems.textsecuregcm.configuration.GraphiteConfiguration;
+import org.whispersystems.textsecuregcm.configuration.GcmConfiguration;
+import org.whispersystems.textsecuregcm.configuration.MaxDeviceConfiguration;
 import org.whispersystems.textsecuregcm.configuration.PushConfiguration;
 import org.whispersystems.textsecuregcm.configuration.RateLimitsConfiguration;
 import org.whispersystems.textsecuregcm.configuration.RedPhoneConfiguration;
@@ -27,7 +29,7 @@ import org.whispersystems.textsecuregcm.configuration.S3Configuration;
 import org.whispersystems.textsecuregcm.configuration.TestDeviceConfiguration;
 import org.whispersystems.textsecuregcm.configuration.TurnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.TwilioConfiguration;
-import org.whispersystems.textsecuregcm.configuration.WebsocketConfiguration;
+import org.whispersystems.websocket.configuration.WebSocketConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -78,6 +80,11 @@ public class WhisperServerConfiguration extends Configuration {
   private List<TestDeviceConfiguration> testDevices = new LinkedList<>();
 
   @Valid
+  @NotNull
+  @JsonProperty
+  private List<MaxDeviceConfiguration> maxDevices = new LinkedList<>();
+
+  @Valid
   @JsonProperty
   private FederationConfiguration federation = new FederationConfiguration();
 
@@ -94,10 +101,6 @@ public class WhisperServerConfiguration extends Configuration {
   @JsonProperty
   private RateLimitsConfiguration limits = new RateLimitsConfiguration();
 
-  @Valid
-  @JsonProperty
-  private WebsocketConfiguration websocket = new WebsocketConfiguration();
-
   @JsonProperty
   private RedPhoneConfiguration redphone = new RedPhoneConfiguration();
 
@@ -109,11 +112,25 @@ public class WhisperServerConfiguration extends Configuration {
   @Valid
   @NotNull
   @JsonProperty
+  private WebSocketConfiguration webSocket = new WebSocketConfiguration();
+
+  @Valid
+  @NotNull
+  @JsonProperty
   private TurnConfiguration turn;
 
+  @Valid
+  @NotNull
+  @JsonProperty
+  private GcmConfiguration gcm;
 
-  public WebsocketConfiguration getWebsocketConfiguration() {
-    return websocket;
+  @Valid
+  @NotNull
+  @JsonProperty
+  private ApnConfiguration apn;
+
+  public WebSocketConfiguration getWebSocketConfiguration() {
+    return webSocket;
   }
 
   public TwilioConfiguration getTwilioConfiguration() {
@@ -168,6 +185,14 @@ public class WhisperServerConfiguration extends Configuration {
     return turn;
   }
 
+  public GcmConfiguration getGcmConfiguration() {
+    return gcm;
+  }
+
+  public ApnConfiguration getApnConfiguration() {
+    return apn;
+  }
+
   public Map<String, Integer> getTestDevices() {
     Map<String, Integer> results = new HashMap<>();
 
@@ -178,4 +203,16 @@ public class WhisperServerConfiguration extends Configuration {
 
     return results;
   }
+
+  public Map<String, Integer> getMaxDevices() {
+    Map<String, Integer> results = new HashMap<>();
+
+    for (MaxDeviceConfiguration maxDeviceConfiguration : maxDevices) {
+      results.put(maxDeviceConfiguration.getNumber(),
+                  maxDeviceConfiguration.getCount());
+    }
+
+    return results;
+  }
+
 }

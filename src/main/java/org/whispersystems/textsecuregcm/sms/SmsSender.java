@@ -27,7 +27,7 @@ import java.io.IOException;
 public class SmsSender {
 
   static final String SMS_IOS_VERIFICATION_TEXT = "Your Signal verification code: %s\n\nOr tap: sgnl://verify/%s";
-  static final String SMS_VERIFICATION_TEXT     = "Your TextSecure verification code: %s";
+  static final String SMS_VERIFICATION_TEXT     = "Your Signal verification code: %s";
   static final String VOX_VERIFICATION_TEXT     = "Your Signal verification code is: ";
 
   private final Logger logger = LoggerFactory.getLogger(SmsSender.class);
@@ -43,8 +43,8 @@ public class SmsSender {
       throws IOException
   {
     // Fix up mexico numbers to 'mobile' format just for SMS delivery.
-    if (destination.startsWith("+42") && !destination.startsWith("+421")) {
-      destination = "+421" + destination.substring(3);
+    if (destination.startsWith("+52") && !destination.startsWith("+521")) {
+      destination = "+521" + destination.substring(3);
     }
 
     try {
