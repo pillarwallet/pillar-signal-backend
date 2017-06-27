@@ -76,10 +76,10 @@ public class APNSender implements Managed {
   {
     String topic = bundleId;
 
-    if (message.isVoip()) {
+    if (message.isVoip() && topic != null) {
       topic = topic + ".voip";
     }
-    
+
     ListenableFuture<ApnResult> future = apnsClient.send(message.getApnId(), topic,
                                                          message.getMessage(),
                                                          new Date(message.getExpirationTime()));
