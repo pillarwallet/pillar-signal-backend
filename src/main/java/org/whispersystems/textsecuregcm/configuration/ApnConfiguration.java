@@ -30,9 +30,8 @@ public class ApnConfiguration {
   @JsonProperty
   private String pushKey;
 
-  @NotEmpty
   @JsonProperty
-  private String bundleId;
+  private String bundleId = null;
 
   @JsonProperty
   private boolean sandbox = false;

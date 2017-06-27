@@ -67,6 +67,7 @@ apn: # Apple Push Notifications configuration
   bundleId:
   pushCertificate:
   pushKey:
+  sandbox: false
 
 gcm: # GCM Configuration
   senderId:
