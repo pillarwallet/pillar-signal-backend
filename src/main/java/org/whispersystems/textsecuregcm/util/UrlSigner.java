@@ -34,20 +34,24 @@ public class UrlSigner {
 
   private final AWSCredentials credentials;
   private final String bucket;
+  private final boolean useAccelerate;
 
   public UrlSigner(S3Configuration config) {
     this.credentials = new BasicAWSCredentials(config.getAccessKey(), config.getAccessSecret());
     this.bucket      = config.getAttachmentsBucket();
+    this.useAccelerate = config.isAccelerateEnabled();
   }
 
   public URL getPreSignedUrl(long attachmentId, HttpMethod method) {
     AmazonS3                    client  = new AmazonS3Client(credentials);
     GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, String.valueOf(attachmentId), method);
-    
+
     request.setExpiration(new Date(System.currentTimeMillis() + DURATION));
     request.setContentType("application/octet-stream");
 
-    client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
+    if (useAccelerate) {
+        client.setS3ClientOptions(S3ClientOptions.builder().setAccelerateModeEnabled(true).build());
+    }
 
     return client.generatePresignedUrl(request);
   }
