@@ -95,6 +95,7 @@ import org.whispersystems.textsecuregcm.workers.TrimMessagesCommand;
 import org.whispersystems.textsecuregcm.workers.VacuumCommand;
 import org.whispersystems.websocket.WebSocketResourceProviderFactory;
 import org.whispersystems.websocket.setup.WebSocketEnvironment;
+import org.whispersystems.textsecuregcm.util.ToshiAuthenticationFilter;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -257,6 +258,9 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     filter.setInitParameter("allowedMethods", "GET,PUT,POST,DELETE,OPTIONS");
     filter.setInitParameter("preflightMaxAge", "5184000");
     filter.setInitParameter("allowCredentials", "true");
+
+    // register toshi authentication filter
+    environment.jersey().register(new ToshiAuthenticationFilter());
 
     environment.healthChecks().register("directory", new RedisHealthCheck(directoryClient));
     environment.healthChecks().register("cache", new RedisHealthCheck(cacheClient));

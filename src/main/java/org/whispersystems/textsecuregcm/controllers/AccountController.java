@@ -49,6 +49,7 @@ import org.whispersystems.textsecuregcm.storage.PendingAccountsManager;
 import org.whispersystems.textsecuregcm.util.Constants;
 import org.whispersystems.textsecuregcm.util.Util;
 import org.whispersystems.textsecuregcm.util.VerificationCode;
+import org.whispersystems.textsecuregcm.util.RequiresToshiAuthentication;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -74,14 +75,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.ethereum.crypto.ECKey;
-import org.ethereum.crypto.ECKey.ECDSASignature;
-import static org.ethereum.crypto.HashUtil.sha3;
-import org.spongycastle.util.encoders.Hex;
-import org.spongycastle.jcajce.provider.digest.Keccak.DigestKeccak;
-import org.spongycastle.jcajce.provider.digest.Keccak.Digest256;
-import java.util.Base64;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.auth.Auth;
@@ -193,36 +186,18 @@ public class AccountController {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Path("/bootstrap")
+  @RequiresToshiAuthentication
   public void createAccountWithBootstrap(@PathParam("user_id") String userId,
-                            @HeaderParam("Authorization")   String authorizationHeader,
-                            @HeaderParam("X-Signal-Agent")  String userAgent,
-                            @HeaderParam("Token-Timestamp")  long timestamp,
-                            @HeaderParam("Token-Signature")  String signature,
-                            @HeaderParam("Token-ID-Address")  String idAddress,
-                            String body)
-      throws IOException,
-             RateLimitExceededException,
-             SignatureException,
-             SignatureLengthException,
-             InvalidEthAddressException,
-             InvalidComponentsException,
-             JsonProcessingException,
-             ExpiredTimestampException
+                                         @HeaderParam("Authorization") String authorizationHeader,
+                                         @HeaderParam("X-Signal-Agent") String userAgent,
+                                         @HeaderParam("Toshi-ID-Address") String toshiId,
+                                         String body)
+      throws IOException, RateLimitExceededException, JsonProcessingException
   {
+      rateLimiters.getVerifyLimiter().validate(toshiId);
 
-
-      long desync = Math.abs(timestamp - getServerTime());
-      if (desync >= TIMESTAMP_EXPIRY) {
-        throw new ExpiredTimestampException(desync);
-      }
-
-      String number = idAddress;
-      String recoveredNumber = getRecoveredEthAddress("PUT", "/v1/accounts/bootstrap", body, String.valueOf(timestamp), signature);
-      logger.info("Expected eth address: " + number);
-      logger.info("Recovered eth address: " + recoveredNumber);
-
-      if (!number.equals(recoveredNumber)) {
-        throw new InvalidEthAddressException(number, recoveredNumber);
+      if (accounts.isRelayListed(toshiId)) {
+        throw new WebApplicationException(Response.status(417).build());
       }
 
       ObjectMapper mapper = new ObjectMapper();
@@ -243,7 +218,7 @@ public class AccountController {
       device.setSignedPreKey(accountBootstrap.getSignedPreKey());
 
       Account account = new Account();
-      account.setNumber(number);
+      account.setNumber(toshiId);
       account.setIdentityKey(accountBootstrap.getIdentityKey());
       account.addDevice(device);
 
@@ -251,7 +226,7 @@ public class AccountController {
         newUserMeter.mark();
       }
 
-      messagesManager.clear(number);
+      messagesManager.clear(toshiId);
 
       keys.store(account.getNumber(), device.getId(), accountBootstrap.getPreKeys());
   }
@@ -260,19 +235,14 @@ public class AccountController {
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
   @Path("/")
-  public void createSimpleAccount(@HeaderParam("Authorization")   String authorizationHeader,
-                            @HeaderParam("X-Signal-Agent")  String userAgent,
-                            @HeaderParam("Token-Timestamp")  long timestamp,
-                            @HeaderParam("Token-Signature")  String signature,
-                            @HeaderParam("Token-ID-Address")  String idAddress,
-                            String body)
+  @RequiresToshiAuthentication
+  public void createSimpleAccount(@HeaderParam("Authorization") String authorizationHeader,
+                                  @HeaderParam("X-Signal-Agent") String userAgent,
+                                  @HeaderParam("Toshi-ID-Address") String toshiId,
+                                  String body)
       throws RateLimitExceededException,
              IOException,
-             JsonProcessingException,
-             SignatureException,
-             InvalidComponentsException,
-             SignatureLengthException,
-             InvalidEthAddressException
+             JsonProcessingException
   {
     try {
       AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
@@ -283,14 +253,6 @@ public class AccountController {
       AccountAttributes accountAttributes = mapper.readValue(body, AccountAttributes.class);
 
       rateLimiters.getVerifyLimiter().validate(number);
-
-      String recoveredNumber = getRecoveredEthAddress("PUT", "/v1/accounts/", body, String.valueOf(timestamp), signature);
-      logger.info("Expected eth address: " + idAddress);
-      logger.info("Recovered eth address: " + recoveredNumber);
-
-      if (!idAddress.equals(recoveredNumber)) {
-        throw new InvalidEthAddressException(idAddress, recoveredNumber);
-      }
 
       if (accounts.isRelayListed(number)) {
         throw new WebApplicationException(Response.status(417).build());
@@ -510,44 +472,6 @@ public class AccountController {
 
   private long getServerTime() {
     return System.currentTimeMillis() / 1000L;
-  }
-
-
-  public String getRecoveredEthAddress(String verb, String path, String body, String timestamp, String rawSignature) throws JsonProcessingException,
-         SignatureException,
-         InvalidComponentsException,
-         SignatureLengthException {
-    String hexAddress = null;
-
-    if (rawSignature.length() != 132) {
-      throw new SignatureLengthException(rawSignature.length());
-    }
-
-    final DigestKeccak keccak = new Digest256();
-    keccak.update(body.getBytes());
-    byte[] hash = keccak.digest();
-    byte[] encodedHashBytes = Base64.getEncoder().encode(hash);
-    String encodedHash = new String(encodedHashBytes);
-    String payload = verb+"\n"+path+"\n"+timestamp+"\n"+encodedHash;
-
-    byte[] payloadHash = sha3(payload.getBytes());
-    byte[] sig = Hex.decode(rawSignature.substring(2));
-
-    byte[] r = new byte[32];
-    System.arraycopy(sig, 0, r, 0, 32);
-    byte[] s = new byte[32];
-    System.arraycopy(sig, 32, s, 0, 32);
-    byte v = (byte) (sig[64] + 0x1b);
-
-    ECDSASignature signature = ECKey.ECDSASignature.fromComponents(r, s, v);
-    if (signature.validateComponents()) {
-        byte[] address = ECKey.signatureToAddress(payloadHash, signature);
-        hexAddress = "0x"+new String(Hex.encode(address));
-    } else {
-      throw new InvalidComponentsException();
-    }
-
-    return hexAddress;
   }
 
   @VisibleForTesting protected VerificationCode generateVerificationCode(String number) {
