@@ -76,6 +76,10 @@ public class APNSender implements Managed {
   {
     String topic = bundleId;
 
+    if (topic.equals("")) {
+        topic = null;
+    }
+
     if (message.isVoip() && topic != null) {
       topic = topic + ".voip";
     }
