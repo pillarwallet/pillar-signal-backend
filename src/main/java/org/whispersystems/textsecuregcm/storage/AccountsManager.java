@@ -37,6 +37,8 @@ public class AccountsManager {
 
   private final Logger logger = LoggerFactory.getLogger(AccountsManager.class);
 
+  private final int CACHE_EXPIRY = 3600; // 1 hour in seconds
+
   private final Accounts         accounts;
   private final JedisPool        cacheClient;
   private final DirectoryManager directory;
@@ -115,7 +117,7 @@ public class AccountsManager {
 
   private void memcacheSet(String number, Account account) {
     try (Jedis jedis = cacheClient.getResource()) {
-      jedis.set(getKey(number), mapper.writeValueAsString(account));
+      jedis.setex(getKey(number), CACHE_EXPIRY, mapper.writeValueAsString(account));
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException(e);
     }
@@ -123,10 +125,14 @@ public class AccountsManager {
 
   private Optional<Account> memcacheGet(String number) {
     try (Jedis jedis = cacheClient.getResource()) {
-      String json = jedis.get(getKey(number));
+        String key = getKey(number);
+      String json = jedis.get(key);
 
-      if (json != null) return Optional.of(mapper.readValue(json, Account.class));
-      else              return Optional.absent();
+      if (json != null) {
+        // update expiry
+        jedis.expire(key, CACHE_EXPIRY);
+        return Optional.of(mapper.readValue(json, Account.class));
+      } else return Optional.absent();
     } catch (IOException e) {
       logger.warn("AccountsManager", "Deserialization error", e);
       return Optional.absent();
