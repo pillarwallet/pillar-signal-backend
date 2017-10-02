@@ -380,14 +380,49 @@ public class AccountController {
     accounts.update(account);
   }
 
+  private Optional<Account> accountFromAuthHeader(String authorizationHeader) {
+    if (authorizationHeader == null) {
+      return Optional.absent();
+    }
+
+    try {
+        AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+        String number = header.getNumber();
+        String password = header.getPassword();
+        Long deviceId = header.getDeviceId();
+
+        Optional<Account> account = accounts.get(number);
+        if (!account.isPresent()) {
+            return Optional.absent();
+        }
+        Optional<Device> device = account.get().getDevice(deviceId);
+        if (!device.isPresent()) {
+            return Optional.absent();
+        }
+
+        if (device.get().getAuthenticationCredentials().verify(password)) {
+            account.get().setAuthenticatedDevice(device.get());
+            return account;
+        }
+
+        return Optional.absent();
+    } catch (InvalidAuthorizationHeaderException iahe) {
+        return Optional.absent();
+    }
+  }
+
   @Timed
   @DELETE
   @Path("/gcm/")
-  public void deleteGcmRegistrationId(@Auth Account account) {
-    Device device = account.getAuthenticatedDevice().get();
-    device.setGcmId(null);
-    device.setFetchesMessages(false);
-    accounts.update(account);
+  public void deleteGcmRegistrationId(@HeaderParam("Authorization") String authorizationHeader) {
+    Optional<Account> optaccount = accountFromAuthHeader(authorizationHeader);
+    if (optaccount.isPresent()) {
+      Account account = optaccount.get();
+      Device device = account.getAuthenticatedDevice().get();
+      device.setGcmId(null);
+      device.setFetchesMessages(false);
+      accounts.update(account);
+    }
   }
 
   @Timed
@@ -406,11 +441,15 @@ public class AccountController {
   @Timed
   @DELETE
   @Path("/apn/")
-  public void deleteApnRegistrationId(@Auth Account account) {
-    Device device = account.getAuthenticatedDevice().get();
-    device.setApnId(null);
-    device.setFetchesMessages(false);
-    accounts.update(account);
+  public void deleteApnRegistrationId(@HeaderParam("Authorization") String authorizationHeader) {
+    Optional<Account> optaccount = accountFromAuthHeader(authorizationHeader);
+    if (optaccount.isPresent()) {
+      Account account = optaccount.get();
+      Device device = account.getAuthenticatedDevice().get();
+      device.setApnId(null);
+      device.setFetchesMessages(false);
+      accounts.update(account);
+    }
   }
 
   @Timed
