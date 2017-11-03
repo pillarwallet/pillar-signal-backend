@@ -2,7 +2,7 @@ machine:
   java:
     version: oraclejdk8
   node:
-    version: 6.7.0
+    version: 8.8.0
   environment:
     PATH: "${PATH}:${HOME}/.yarn/bin"
 
@@ -21,10 +21,12 @@ deployment:
       - git clone --depth 1 git@github.com:tokenbrowser/docs.git $HOME/docs
       - $HOME/docs/deploy-blueprint.sh $CIRCLE_PROJECT_REPONAME docs/api.apib $CIRCLE_SHA1
       - git push -f git@heroku.com:token-chat-service-development.git $CIRCLE_SHA1:master
-      - heroku run -s hobby --app token-chat-service-development -- ./heroku-init.sh
+      - heroku run --app token-chat-service-development -- ./heroku-init.sh
+      - git push -f git@heroku.com:token-chat-service.git $CIRCLE_SHA1:master
+      - heroku run --app token-chat-service -- ./heroku-init.sh
 
   production:
     branch: production
     commands:
-      - git push -f git@heroku.com:token-chat-service.git $CIRCLE_SHA1:master
-      - heroku run -s hobby --app token-chat-service -- ./heroku-init.sh
+      - git push -f git@heroku.com:toshi-chat-service.git $CIRCLE_SHA1:master
+      - heroku run --app toshi-chat-service -- ./heroku-init.sh
