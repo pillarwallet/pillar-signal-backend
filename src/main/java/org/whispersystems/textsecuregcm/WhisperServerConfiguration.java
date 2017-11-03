@@ -31,6 +31,8 @@ import org.whispersystems.textsecuregcm.configuration.TurnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.TwilioConfiguration;
 import org.whispersystems.websocket.configuration.WebSocketConfiguration;
 
+import org.toshi.mixpanel.MixpanelConfiguration;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
@@ -129,6 +131,9 @@ public class WhisperServerConfiguration extends Configuration {
   @JsonProperty
   private ApnConfiguration apn;
 
+  @JsonProperty
+  private MixpanelConfiguration mixpanel;
+
   public WebSocketConfiguration getWebSocketConfiguration() {
     return webSocket;
   }
@@ -191,6 +196,10 @@ public class WhisperServerConfiguration extends Configuration {
 
   public ApnConfiguration getApnConfiguration() {
     return apn;
+  }
+
+  public MixpanelConfiguration getMixpanelConfiguration() {
+    return mixpanel;
   }
 
   public Map<String, Integer> getTestDevices() {

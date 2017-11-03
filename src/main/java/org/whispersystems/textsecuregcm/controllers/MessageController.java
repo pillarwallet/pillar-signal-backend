@@ -64,6 +64,8 @@ import java.util.Set;
 
 import io.dropwizard.auth.Auth;
 
+import org.toshi.mixpanel.MixpanelSender;
+
 @Path("/v1/messages")
 public class MessageController {
 
@@ -75,6 +77,7 @@ public class MessageController {
   private final FederatedClientManager federatedClientManager;
   private final AccountsManager        accountsManager;
   private final MessagesManager        messagesManager;
+  private final MixpanelSender         mixpanelSender;
 
   public MessageController(RateLimiters rateLimiters,
                            PushSender pushSender,
@@ -89,6 +92,24 @@ public class MessageController {
     this.accountsManager        = accountsManager;
     this.messagesManager        = messagesManager;
     this.federatedClientManager = federatedClientManager;
+    this.mixpanelSender         = null;
+  }
+
+  public MessageController(RateLimiters rateLimiters,
+                           PushSender pushSender,
+                           ReceiptSender receiptSender,
+                           AccountsManager accountsManager,
+                           MessagesManager messagesManager,
+                           FederatedClientManager federatedClientManager,
+                           MixpanelSender mixpanelSender)
+  {
+    this.rateLimiters           = rateLimiters;
+    this.pushSender             = pushSender;
+    this.receiptSender          = receiptSender;
+    this.accountsManager        = accountsManager;
+    this.messagesManager        = messagesManager;
+    this.federatedClientManager = federatedClientManager;
+    this.mixpanelSender         = mixpanelSender;
   }
 
   @Timed
@@ -218,6 +239,10 @@ public class MessageController {
       }
 
       pushSender.sendMessage(destinationAccount, destinationDevice, messageBuilder.build(), incomingMessage.isSilent());
+      // send mixpanel sent message event
+      if (destinationDevice.isMaster() && this.mixpanelSender != null) {
+        this.mixpanelSender.sendSentMessageEvent(source.getNumber());
+      }
     } catch (NotPushRegisteredException e) {
       if (destinationDevice.isMaster()) throw new NoSuchUserException(e);
       else                              logger.debug("Not registered", e);
