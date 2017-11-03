@@ -111,6 +111,8 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import redis.clients.jedis.JedisPool;
 
+import org.toshi.mixpanel.MixpanelSender;
+
 public class WhisperServerService extends Application<WhisperServerConfiguration> {
 
   static {
@@ -197,9 +199,15 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     environment.lifecycle().manage(pubSubManager);
     environment.lifecycle().manage(pushSender);
 
+    MixpanelSender mixpanelSender = null;
+    if (config.getMixpanelConfiguration() != null && config.getMixpanelConfiguration().getToken() != null) {
+      mixpanelSender = new MixpanelSender(config.getMixpanelConfiguration().getToken());
+      environment.lifecycle().manage(mixpanelSender);
+    }
+
     AttachmentController attachmentController = new AttachmentController(rateLimiters, federatedClientManager, urlSigner);
     KeysController       keysController       = new KeysController(rateLimiters, keys, accountsManager, federatedClientManager);
-    MessageController    messageController    = new MessageController(rateLimiters, pushSender, receiptSender, accountsManager, messagesManager, federatedClientManager);
+    MessageController    messageController    = new MessageController(rateLimiters, pushSender, receiptSender, accountsManager, messagesManager, federatedClientManager, mixpanelSender);
     ProfileController    profileController    = new ProfileController(rateLimiters , accountsManager);
 
     environment.jersey().register(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<Account>()
