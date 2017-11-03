@@ -200,7 +200,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     environment.lifecycle().manage(pushSender);
 
     MixpanelSender mixpanelSender = null;
-    if (config.getMixpanelConfiguration() != null && config.getMixpanelConfiguration().getToken() != null) {
+    if (config.getMixpanelConfiguration() != null && config.getMixpanelConfiguration().getToken() != null && config.getMixpanelConfiguration().getToken() != "") {
       mixpanelSender = new MixpanelSender(config.getMixpanelConfiguration().getToken());
       environment.lifecycle().manage(mixpanelSender);
     }
