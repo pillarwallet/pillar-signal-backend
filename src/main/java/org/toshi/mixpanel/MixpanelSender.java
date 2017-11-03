@@ -13,10 +13,15 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class MixpanelSender implements Managed {
 
   private static class DeliveryThread extends Thread {
+
+    private final Logger logger = LoggerFactory.getLogger(DeliveryThread.class);
 
     private static long MILLIS_TO_WAIT = 10 * 1000;
 
@@ -32,20 +37,28 @@ public class MixpanelSender implements Managed {
         while (!this.shutdown) {
           ClientDelivery delivery = new ClientDelivery();
           JSONObject message = null;
+          int messageCount = 0;
+
           do {
             message = messageQueue.poll();
             if (message != null) {
+              messageCount += 1;
               delivery.addMessage(message);
             }
           } while (message != null);
 
-          mixpanelApi.deliver(delivery);
+          if (messageCount > 0) {
+            try {
+              mixpanelApi.deliver(delivery);
+            } catch (IOException e) {
+              logger.error("Failed to deliver mixpanel events", e);
+            }
+          }
 
           if (!this.shutdown) Thread.sleep(MILLIS_TO_WAIT);
         }
-      } catch (IOException e) {
-        throw new RuntimeException("Can't communicate with Mixpanel.", e);
       } catch (InterruptedException e) {
+          logger.info("Mixpanel sender thread inturrupted", e);
       }
     }
 
