@@ -19,7 +19,7 @@ package org.whispersystems.textsecuregcm.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class S3Configuration {
+public class AttachmentsConfiguration {
 
   @NotEmpty
   @JsonProperty
@@ -31,7 +31,7 @@ public class S3Configuration {
 
   @NotEmpty
   @JsonProperty
-  private String attachmentsBucket;
+  private String bucket;
 
   @JsonProperty
   private boolean accelerate = true;
@@ -44,8 +44,8 @@ public class S3Configuration {
     return accessSecret;
   }
 
-  public String getAttachmentsBucket() {
-    return attachmentsBucket;
+  public String getBucket() {
+    return bucket;
   }
 
   public boolean isAccelerateEnabled() {
