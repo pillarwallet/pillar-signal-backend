@@ -9,14 +9,20 @@ twilio: # Twilio SMS gateway configuration
 push:
   queueSize: # Size of push pending queue
 
-s3: # AWS S3 configuration
+attachments: # AWS S3 configuration
   accessKey: none
   accessSecret: none
 
   # Name of the S3 bucket (needs to have been created)
   # for attachments to go.  Should be configured with
   # correct permissions.
-  attachmentsBucket: none
+  bucket: none
+
+profiles: # AWS S3 configuration
+  accessKey:
+  accessSecret:
+  bucket:
+  region:
 
 cache: # Redis server configuration for cache cluster
   url:

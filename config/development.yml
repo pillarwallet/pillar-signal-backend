@@ -3,16 +3,23 @@ twilio: # Twilio SMS gateway configuration
   accountToken:
   numbers:
    - 1234567890
+  messagingServicesId:
   localDomain: # The domain Twilio can call back to.
 
-s3: # AWS S3 configuration
+attachments: # AWS S3 configuration
   accessKey: none
   accessSecret: none
 
   # Name of the S3 bucket (needs to have been created)
   # for attachments to go.  Should be configured with
   # correct permissions.
-  attachmentsBucket: none
+  bucket: none
+
+profiles: # AWS S3 configuration
+  accessKey:
+  accessSecret:
+  bucket:
+  region:
 
 directory: # Redis server configuration for TS directory
   url:
