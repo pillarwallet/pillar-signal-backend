@@ -1,160 +1,82 @@
 twilio: # Twilio SMS gateway configuration
-  accountId: "ACdb8c8be629fe9e1e278ee9f79110ea66"
-  accountToken: "a16abdb3764f744b5ad12bab47a18d51"
+  accountId:
+  accountToken:
   numbers:
-   - +443300582638 
-  localDomain: "https://pillar-chat-service.herokuapp.com/" # The doma
+   - 1234567890
+  localDomain: # The domain Twilio can call back to.
 
 push:
-   queueSize: 1000 
+  queueSize: # Size of push pending queue
 
-server:
-  applicationConnectors:
-    - type: https
-      port: 8080
-      keyStorePath: config/example.keystore
-      keyStorePassword: example
-      validateCerts: false
-  adminConnectors:
-    - type: https
-      port: 8081
-      keyStorePath: config/example.keystore
-      keyStorePassword: example
-      validateCerts: false
+attachments: # AWS S3 configuration
+  accessKey: none
+  accessSecret: none
 
-cache:
-  url: redis://12cd 7.0.0.1:6379/0
+  # Name of the S3 bucket (needs to have been created)
+  # for attachments to go.  Should be configured with
+  # correct permissions.
+  bucket: none
 
-directory:
-  url: redis://127.0.0.1:6379/1
+profiles: # AWS S3 configuration
+  accessKey:
+  accessSecret:
+  bucket:
+  region:
 
-messageStore:
+directory: # Redis server configuration for TS directory
+  url:
+
+cache: # Redis server configuration for general purpose caching
+  url:
+
+messageStore: # Postgres database configuration for message store
   driverClass: org.postgresql.Driver
-  user: whisper
-  password: whisper
-  url: jdbc:postgresql://localhost:5432/messagedb
+  user:
+  password:
+  url:
+  initialSize: 1
+  minSize: 1
+  maxSize: 3
 
-database:
+database: # Postgres database configuration for account store
+  # the name of your JDBC driver
   driverClass: org.postgresql.Driver
-  user: whisper
-  password: whisper
-  url: jdbc:postgresql://localhost:5432/accountdb
+
+  # the username
+  user:
+
+  # the password
+  password:
+
+  # the JDBC URL
+  url:
+  initialSize: 1
+  minSize: 1
+  maxSize: 3
+
+  # any properties specific to your JDBC driver:
   properties:
     charSet: UTF-8
 
+server:
+  applicationConnectors:
+    - type: http
+      port:
+#  adminConnectors:
+#    - type: http
+#      port:
 
-gcm:
-  senderId: 811306482558
-  apiKey: AAAAvOWie34:APA91bEsQ2G7iHyAjZFmXTvzN6ox_HKz2w6XmPKmUGY4FErvTjbz16KCsEnyV7bGaOYN4yLRVkof8oL9fFv5BAFi3kTsOOgQnuI7KtWpW7Rsl66f8gTEW6NH2Bp1lA-K6DYKBi7HGO48 #fcm demo jude
-
-
-apn:
-  pushCertificate: Cdsjalfksjdlfkjsdlfksdlfkjsdfkjas
-  pushKey: Ksflskdjfalsdkfjslkfslkfslkgslgkj
-  bundleId: maynotbeempty
-
-attachments: # AWS S3 configuration
-  accessKey: vvv
-  accessSecret: vvv
-  bucket: vvv
-
-profiles: # AWS S3 configuration
-  accessKey: vvv
-  accessSecret: vvv
-  bucket: vvv
-  region: vvv
-
-turn: # TURN server configuration
-  secret: secret # TURN server secret
+turn:
+  secret: none
   uris:
-    - stun:yourdomain:80
-    - stun:yourdomain.com:443
-    - turn:yourdomain:443?transport=udp
-    - turn:etc.com:80?transport=udp
+   - none
 
+apn: # Apple Push Notifications configuration
+  bundleId:
+  pushCertificate:
+  pushKey:
+  sandbox: false
 
-
-
-
-# twilio: # Twilio SMS gateway configuration
-#   accountId: "ACdb8c8be629fe9e1e278ee9f79110ea66"
-#   accountToken: "a16abdb3764f744b5ad12bab47a18d51"
-#   numbers:
-#    - +443300582638 
-#   localDomain: "https://pillar-chat-service.herokuapp.com/" # The domain Twilio can call back to.
-
-# push:
-#   queueSize: # Size of push pending queue
-
-# attachments: # AWS S3 configuration
-#   accessKey: none
-#   accessSecret: none
-
-#   # Name of the S3 bucket (needs to have been created)
-#   # for attachments to go.  Should be configured with
-#   # correct permissions.
-#   bucket: none
-
-# profiles: # AWS S3 configuration
-#   accessKey:
-#   accessSecret:
-#   bucket:
-#   region:
-
-# directory: # Redis server configuration for TS directory
-#   url:
-
-# cache: # Redis server configuration for general purpose caching
-#   url:
-
-# messageStore: # Postgres database configuration for message store
-#   driverClass: org.postgresql.Driver
-#   user:
-#   password:
-#   url:
-#   initialSize: 1
-#   minSize: 1
-#   maxSize: 3
-
-# database: # Postgres database configuration for account store
-#   # the name of your JDBC driver
-#   driverClass: org.postgresql.Driver
-
-#   # the username
-#   user:
-
-#   # the password
-#   password:
-
-#   # the JDBC URL
-#   url:
-#   initialSize: 1
-#   minSize: 1
-#   maxSize: 3
-
-#   # any properties specific to your JDBC driver:
-#   properties:
-#     charSet: UTF-8
-
-# server:
-#   applicationConnectors:
-#     - type: http
-#       port:
-# #  adminConnectors:
-# #    - type: http
-# #      port:
-
-# turn:
-#   secret: none
-#   uris:
-#    - none
-
-# apn: # Apple Push Notifications configuration
-#   bundleId:
-#   pushCertificate:
-#   pushKey:
-#   sandbox: false
-
-# gcm: # GCM Configuration
-#   senderId:
-#   apiKey:
+gcm: # GCM Configuration
+  senderId:
+  apiKey:
