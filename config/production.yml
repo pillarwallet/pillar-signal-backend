@@ -28,7 +28,7 @@ cache: # Redis server configuration for cache cluster
   url: redis://h:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@ec2-34-252-77-108.eu-west-1.compute.amazonaws.com:37489
 
 directory: # Redis server configuration for directory cluster
-  url:redis://h:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@ec2-34-252-77-108.eu-west-1.compute.amazonaws.com:37489
+  url: redis://h:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@ec2-34-252-77-108.eu-west-1.compute.amazonaws.com:37489
 
 messageStore: # Postgresql database configuration for message store
   driverClass: org.postgresql.Driver
