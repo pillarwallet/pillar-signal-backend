@@ -44,7 +44,7 @@ attachments: # AWS S3 configuration
 profiles: # AWS S3 configuration
   accessKey: none
   accessSecret: none
-  bucket:none
+  bucket: none
   region: none
 
 database: # Postgresql database configuration
