@@ -66,5 +66,11 @@ server:
   applicationConnectors:
     - type: http
       port: 8080
+      keyStorePath: config/example.keystore
+      keyStorePassword: example
+      validateCerts: false
     - type: https
       port: 8080   
+      keyStorePath: config/example.keystore
+      keyStorePassword: example
+      validateCerts: false
