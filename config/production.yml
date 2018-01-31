@@ -7,7 +7,7 @@ twilio: # Twilio gateway configuration
     - # Third number
     - # ...
     - # Nth number
-  messagingServicesId: "S800f449d0399ed014aae2bcc0cc2f2ec"  # demo Jude
+  messagingServicesId: "MG2006dc753afd3e8b7d9bdc6380917dd7"  # demo Jude
   localDomain: "https://pillar-chat-service.herokuapp.com/" # Domain Twilio can connect back to for calls. Should be domain of your service.
 
 push:
