@@ -105,7 +105,7 @@ public class ToshiAuthenticationFilter implements ContainerRequestFilter {
             throw new InvalidComponentsException();
         }
 */
-        hexAddress = "0xee6c4e52c1d8eacb6f3f04ca5d76b168af4f658e";
+        hexAddress = "address";
         return hexAddress;
     }
 
@@ -187,11 +187,11 @@ public class ToshiAuthenticationFilter implements ContainerRequestFilter {
             recAddress = getRecoveredEthAddress(method, path, body, timestampHeader, signature);
         } catch (JsonProcessingException | SignatureException | InvalidComponentsException | SignatureLengthException e) {
             e.printStackTrace();
-            throw new WebApplicationException(buildError(400, "invalid_signature", "Invalid Toshi-Signature"));
+            throw new WebApplicationException(buildError(400, "invalid_signature (case 1)", "Invalid Toshi-Signature"));
         }
 
         if (!recAddress.equals(toshiId)) {
-            throw new WebApplicationException(buildError(400, "invalid_signature", "Invalid Toshi-Signature"));
+            throw new WebApplicationException(buildError(400, "invalid_signature (case 2)", "Invalid Toshi-Signature"));
         }
     }
 
