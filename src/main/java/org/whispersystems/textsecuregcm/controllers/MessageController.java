@@ -237,7 +237,7 @@ public class MessageController {
       if (source.getRelay().isPresent()) {
         messageBuilder.setRelay(source.getRelay().get());
       }
-
+      logger.info("              MESSAGE CONTROLLER TRIGGER PUSH SENDER SEND MESSAGE               ");
       pushSender.sendMessage(destinationAccount, destinationDevice, messageBuilder.build(), incomingMessage.isSilent());
       // send mixpanel sent message event
       if (destinationDevice.isMaster() && this.mixpanelSender != null) {

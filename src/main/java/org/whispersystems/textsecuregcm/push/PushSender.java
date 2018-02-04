@@ -35,6 +35,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.lifecycle.Managed;
 import static org.whispersystems.textsecuregcm.entities.MessageProtos.Envelope;
 
+
 public class PushSender implements Managed {
 
   private final Logger logger = LoggerFactory.getLogger(PushSender.class);
@@ -73,6 +74,9 @@ public class PushSender implements Managed {
   public void sendMessage(final Account account, final Device device, final Envelope message, final boolean silent)
       throws NotPushRegisteredException
   {
+
+    logger.info("               PUSH SENDER SEND MESSAGE               ");
+
     if (device.getGcmId() == null && device.getApnId() == null && !device.getFetchesMessages()) {
       throw new NotPushRegisteredException("No delivery possible!");
     }
@@ -109,6 +113,7 @@ public class PushSender implements Managed {
   }
 
   private void sendGcmMessage(Account account, Device device, Envelope message) {
+    logger.info("               PUSH SENDER SEND GCM MESSAGE               ");
     DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.GCM);
 
     if (!deliveryStatus.isDelivered()) {
