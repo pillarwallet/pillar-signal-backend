@@ -345,6 +345,7 @@ public class MessageController {
     if (Util.isEmpty(message.getBody())) return Optional.absent();
 
     try {
+      logger.info("MESSAGE GET BODY"+message.getBody());
       return Optional.of(Base64.decode(message.getBody()));
     } catch (IOException ioe) {
       logger.info("GET MESSAGE BODY ERROR");
@@ -357,6 +358,7 @@ public class MessageController {
     if (Util.isEmpty(message.getContent())) return Optional.absent();
 
     try {
+      logger.info("MESSAGE GET CONTENT"+message.getContent());
       return Optional.of(Base64.decode(message.getContent()));
     } catch (IOException ioe) {
       logger.info("GET MESSAGE CONTENT ERROR");
