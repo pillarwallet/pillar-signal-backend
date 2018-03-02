@@ -219,6 +219,10 @@ public class MessageController {
     try {
       Optional<byte[]> messageBody    = getMessageBody(incomingMessage);
       Optional<byte[]> messageContent = getMessageContent(incomingMessage);
+      
+      logger.info("INCOMING MESSAGE= "+incomingMessage);
+      logger.info("MESSAGE BODY= "+messageBody);
+      logger.info("MESSAGE CONTENT= "+messageContent);
       Envelope.Builder messageBuilder = Envelope.newBuilder();
 
       messageBuilder.setType(Envelope.Type.valueOf(incomingMessage.getType()))
@@ -343,6 +347,7 @@ public class MessageController {
     try {
       return Optional.of(Base64.decode(message.getBody()));
     } catch (IOException ioe) {
+      logger.info("GET MESSAGE BODY ERROR");
       logger.debug("Bad B64", ioe);
       return Optional.absent();
     }
@@ -354,6 +359,7 @@ public class MessageController {
     try {
       return Optional.of(Base64.decode(message.getContent()));
     } catch (IOException ioe) {
+      logger.info("GET MESSAGE CONTENT ERROR");
       logger.debug("Bad B64", ioe);
       return Optional.absent();
     }
