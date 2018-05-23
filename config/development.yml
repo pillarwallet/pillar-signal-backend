@@ -2,7 +2,7 @@ twilio: # Twilio gateway configuration
   accountId: "ACdb8c8be629fe9e1e278ee9f79110ea66"
   accountToken:  "a16abdb3764f744b5ad12bab47a18d51"
   numbers: # Numbers allocated in Twilio
-    - +443300582638
+    - +447480638211
     - # Second number
     - # Third number
     - # ...
@@ -60,7 +60,7 @@ apn: # Apple Push Notifications configuration
 
 gcm: # GCM Configuration
   senderId: 811306482558
-  apiKey: AAAAvOWie34:APA91bEsQ2G7iHyAjZFmXTvzN6ox_HKz2w6XmPKmUGY4FErvTjbz16KCsEnyV7bGaOYN4yLRVkof8oL9fFv5BAFi3kTsOOgQnuI7KtWpW7Rsl66f8gTEW6NH2Bp1lA-K6DYKBi7HGO48 
+  apiKey: AAAAvOWie34:APA91bEsQ2G7iHyAjZFmXTvzN6ox_HKz2w6XmPKmUGY4FErvTjbz16KCsEnyV7bGaOYN4yLRVkof8oL9fFv5BAFi3kTsOOgQnuI7KtWpW7Rsl66f8gTEW6NH2Bp1lA-K6DYKBi7HGO48
 
 server:
   applicationConnectors:
