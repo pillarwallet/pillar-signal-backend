@@ -8,7 +8,6 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.oracle.javafx.jmx.json.JSONDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.gcm.server.Message;
