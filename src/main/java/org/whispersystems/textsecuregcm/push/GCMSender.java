@@ -8,6 +8,7 @@ import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.oracle.javafx.jmx.json.JSONDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.gcm.server.Message;
@@ -24,6 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.lifecycle.Managed;
@@ -66,9 +69,15 @@ public class GCMSender implements Managed {
                                      .withPriority("high");
 
     String  key     = message.isReceipt() ? "receipt" : "notification";
+    JSONObject msgJSONO = new JSONObject();
+    try {
+      msg.put("type", "signal");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
     Message request = builder
             .withDataPart(key, "")
-            .withDataPart("msg", "{\"type\": \"signal\"}")
+            .withDataPart("msg", msg.toString())
             .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
