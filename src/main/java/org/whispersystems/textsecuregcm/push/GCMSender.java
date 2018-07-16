@@ -71,13 +71,13 @@ public class GCMSender implements Managed {
     String  key     = message.isReceipt() ? "receipt" : "notification";
     JSONObject msgJSONO = new JSONObject();
     try {
-      msg.put("type", "signal");
+      msgJSONO.put("type", "signal");
     } catch (JSONException e) {
       e.printStackTrace();
     }
     Message request = builder
             .withDataPart(key, "")
-            .withDataPart("msg", msg.toString())
+            .withDataPart("msg", msgJSONO.toString())
             .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
