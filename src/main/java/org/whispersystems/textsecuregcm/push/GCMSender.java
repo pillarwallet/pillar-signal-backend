@@ -68,7 +68,7 @@ public class GCMSender implements Managed {
     String  key     = message.isReceipt() ? "receipt" : "notification";
     Message request = builder
             .withDataPart(key, "")
-            .withDataPart("type", "signalServerMessage")
+            .withDataPart("msg", "{\"type\": \"signal\"}")
             .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
