@@ -36,9 +36,9 @@ messageStore: # Postgresql database configuration for message store
   password: f8016a9f3641f02d8b3468e4de16071433fa718a62eaaac2fb231bae9e5e9ed5
   url: postgres://zqwaqeqlqehpky:f8016a9f3641f02d8b3468e4de16071433fa718a62eaaac2fb231bae9e5e9ed5@ec2-54-217-245-53.eu-west-1.compute.amazonaws.com:5432/d4ja58gehjq9v9
 attachments: # AWS S3 configuration
-  accessKey:
-  accessSecret:
-  bucket:
+  accessKey: none
+  accessSecret: none
+  bucket: none
 
 profiles: # AWS S3 configuration
   accessKey: none
