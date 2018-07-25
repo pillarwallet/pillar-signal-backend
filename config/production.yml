@@ -17,7 +17,7 @@ redphone:
   authKey: # Deprecated
 
 turn: # TURN server configuration
-  secret: # TURN server secret
+  secret:  none # TURN server secret
   uris:
     - stun:yourdomain:80
     - stun:yourdomain.com:443
