@@ -2,7 +2,7 @@ default: build
 
 ACCOUNT_DATABASE_URL ?= postgres://postgres:YYWWvNGCa8Gz@127.0.0.1:5432/pillarmessaging
 MESSAGE_DATABASE_URL ?= postgres://postgres:YYWWvNGCa8Gz@127.0.0.1:5432/messagestore
-REDIS_URL = redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:37489 
+REDIS_URL = redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:6379 
 
 VERSION := 1.66
 TARGET := target/TextSecureServer-$(VERSION).jar
