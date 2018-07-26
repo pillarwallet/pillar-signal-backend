@@ -25,10 +25,10 @@ turn: # TURN server configuration
     - turn:etc.com:80?transport=udp
 
 cache: # Redis server configuration for cache cluster
-  url: redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:37489
+  url: redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:6379
 
 directory: # Redis server configuration for directory cluster
-  url: redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:37489
+  url: redis://:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@127.0.0.1:6379
 
 messageStore: # Postgresql database configuration for message store
   driverClass: org.postgresql.Driver
