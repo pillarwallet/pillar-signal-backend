@@ -53,6 +53,9 @@ build:
 test:
 	mvn test
 
+deploy:
+	mvn deploy
+
 dbmigrate:
 	$(RUN) accountdb migrate $(CONFIG)
 	$(RUN) messagedb migrate $(CONFIG)
