@@ -32,3 +32,14 @@ jobs:
       - store_artifacts: # store the uberjar as an artifact
           path: target/TextSecureServer-$(SIGNAL_VERSION).jar
       # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
+
+
+workflows:
+  version: 2
+  build_and_deploy_to_artifactory:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - aws-deployed-version
