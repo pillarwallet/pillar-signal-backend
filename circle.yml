@@ -30,7 +30,9 @@ jobs:
           path: target/surefire-reports
 
       - store_artifacts: # store the uberjar as an artifact
-          path: target/TextSecureServer-$(SIGNAL_VERSION).jar
+          path: target/TextSecureServer-1.66-bin.tar.gz
+
+      - run: tar -xvzf target/TextSecureServer-1.66-bin.tar.gz
       # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
 
 
