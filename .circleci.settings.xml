@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <servers>
+    <server>
+      <username>judeebene</username>
+      <password>AP93W7uePbBbxokCxM1J67jSGGT</password>
+      <id>central</id>
+    </server>
+    <server>
+      <username>judeebene</username>
+      <password>AP93W7uePbBbxokCxM1J67jSGGT</password>
+      <id>snapshots</id>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <repositories>
+        <repository>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>Signal-backend</name>
+          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
+        </repository>
+        <repository>
+          <snapshots />
+          <id>snapshots</id>
+          <name>Signal-backend</name>
+          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>Signal-backend</name>
+          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
+        </pluginRepository>
+        <pluginRepository>
+          <snapshots />
+          <id>snapshots</id>
+          <name>Signal-backend</name>
+          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
+        </pluginRepository>
+      </pluginRepositories>
+      <id>artifactory</id>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>artifactory</activeProfile>
+  </activeProfiles>
+</settings>
