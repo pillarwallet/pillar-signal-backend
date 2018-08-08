@@ -310,4 +310,17 @@
        </repository>
     </repositories>
 
+    <distributionManagement>
+    <repository>
+        <id>central</id>
+        <name>pillarproject-releases</name>
+        <url>https://pillarproject.jfrog.io/pillarproject/signal-backend</url>
+    </repository>
+    <snapshotRepository>
+        <id>snapshots</id>
+        <name>pillarproject-snapshots</name>
+        <url>https://pillarproject.jfrog.io/pillarproject/signal-backend</url>
+    </snapshotRepository>
+</distributionManagement>
+
 </project>
