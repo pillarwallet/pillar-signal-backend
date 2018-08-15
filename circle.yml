@@ -32,13 +32,9 @@ jobs:
       - store_artifacts: # store the jar as an artifact
           path: target/TextSecureServer-1.66-bin.tar.gz
 
-      - run: tar -cvf target/TextSecureServer-1.66-bin.tar.gz Makefile
-
-
-
       - run:
          name: Upload signal tar to artifactory
-         command: curl -u $username:$password -T target/TextSecureServer-1.66-bin.tar.gz $SIGNAL_ARTIFACTORY_URL/signal-backend:$CIRCLE_BUILD_NUM
+         command: curl -u $username:$password -T target/TextSecureServer-1.66-bin.tar.gz $SIGNAL_ARTIFACTORY_URL/signal-backend:$CIRCLE_BUILD_NUM.tar.gz
 
 
 workflows:

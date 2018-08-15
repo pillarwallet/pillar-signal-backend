@@ -201,6 +201,14 @@
     </dependencyManagement>
 
     <build>
+      <resources>
+        <resource>
+            <directory>run</directory>
+            <includes>
+                <include>**/Makefile</include>
+            </includes>
+        </resource>
+    </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
