@@ -25,21 +25,20 @@ turn: # TURN server configuration
     - turn:etc.com:80?transport=udp
 
 cache: # Redis server configuration for cache cluster
-  url: redis://h:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@ec2-34-252-77-108.eu-west-1.compute.amazonaws.com:37489
+  url: redis://:p08c08240326a23d1b7ac2f08f30381dfcafe0e3b1c09251e32ab16893fd65948@127.0.0.1:6379
 
 directory: # Redis server configuration for directory cluster
-  url: redis://h:p5c9d4d8c755201646fdcc9a5e1530a37a42a324a0422f6cc6d517aa69ffcf1e1@ec2-34-252-77-108.eu-west-1.compute.amazonaws.com:37489
+  url: redis://:p08c08240326a23d1b7ac2f08f30381dfcafe0e3b1c09251e32ab16893fd65948@127.0.0.1:6379
 
 messageStore: # Postgresql database configuration for message store
   driverClass: org.postgresql.Driver
-  user: opqivwsgqdpsaz
-  password: f54ae206f25e6788dce5a392e6051e8eeafa749441337ecce4e87ce9c35d510f
-  url: postgres://opqivwsgqdpsaz:f54ae206f25e6788dce5a392e6051e8eeafa749441337ecce4e87ce9c35d510f@ec2-54-217-245-53.eu-west-1.compute.amazonaws.com:5432/devje5jnora2k2
-
+  user: postgres
+  password: YYWWvNGCa8Gz
+  url: postgres://postgres:YYWWvNGCa8Gz@signal-db.c8ky9mrwf5wc.eu-west-2.rds.amazonaws.com:5432/messagestore
 attachments: # AWS S3 configuration
-  accessKey:
-  accessSecret:
-  bucket:
+  accessKey: none
+  accessSecret: none
+  bucket: none
 
 profiles: # AWS S3 configuration
   accessKey: none
@@ -49,14 +48,13 @@ profiles: # AWS S3 configuration
 
 database: # Postgresql database configuration
   driverClass: org.postgresql.Driver
-  user: "clhgtugujbupjk"
-  password: "f38bf584898b10ba3199ef59aa4be87795f2d855221289f6da414da80b4def61"
-  url: postgres://clhgtugujbupjk:f38bf584898b10ba3199ef59aa4be87795f2d855221289f6da414da80b4def61@ec2-54-217-245-66.eu-west-1.compute.amazonaws.com:5432/d9rb2n7ao8an8e
-
+  user: zpostgres
+  password: YYWWvNGCa8Gz
+  url: postgres://postgres:YYWWvNGCa8Gz@signal-db.c8ky9mrwf5wc.eu-west-2.rds.amazonaws.com:5432/pillarmessaging
 apn: # Apple Push Notifications configuration
-  bundleId:
-  pushCertificate:
-  pushKey:
+  bundleId: none
+  pushCertificate: none
+  pushKey: none
 
 gcm: # GCM Configuration
   senderId: 811306482558
@@ -79,3 +77,4 @@ server:
       keyStorePath: config/example.keystore
       keyStorePassword: example
       validateCerts: false
+                                                                                                                                                                       79,1          Bot
