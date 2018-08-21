@@ -21,13 +21,8 @@
                 <include>${project.name}-${project.version}.jar</include>
             </includes>
         </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
-            <includes>
-                <include>Makefile</include>
-                <include>setup.sh</include>
-            </includes>
-        </fileSet>
+        <file>
+      <source>${project.build.directory}/Makefile</source>
+      </file>
     </fileSets>
 </assembly>
