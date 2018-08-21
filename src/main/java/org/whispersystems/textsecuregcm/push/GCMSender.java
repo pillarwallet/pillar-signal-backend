@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONObject;
+import org.json.JSONException;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.lifecycle.Managed;
@@ -66,7 +68,16 @@ public class GCMSender implements Managed {
                                      .withPriority("high");
 
     String  key     = message.isReceipt() ? "receipt" : "notification";
-    Message request = builder.withDataPart(key, "").build();
+    JSONObject msgJSONO = new JSONObject();
+    try {
+      msgJSONO.put("type", "signal");
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    Message request = builder
+            .withDataPart(key, "")
+            .withDataPart("msg", msgJSONO.toString())
+            .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
     markOutboundMeter(key);
