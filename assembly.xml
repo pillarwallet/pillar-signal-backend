@@ -21,8 +21,7 @@
                 <include>${project.name}-${project.version}.jar</include>
             </includes>
         </fileSet>
-        <file>
-      <source>${project.build.directory}/Makefile</source>
-      </file>
+
     </fileSets>
+
 </assembly>
