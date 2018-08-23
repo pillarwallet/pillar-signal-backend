@@ -201,14 +201,6 @@
     </dependencyManagement>
 
     <build>
-      <resources>
-        <resource>
-            <directory>run</directory>
-            <includes>
-                <include>**/Makefile</include>
-            </includes>
-        </resource>
-    </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -317,18 +309,5 @@
          <url>http://dl.bintray.com/ethereum/maven</url>
        </repository>
     </repositories>
-
-    <distributionManagement>
-      <repository>
-          <id>central</id>
-          <name>pillarproject-releases</name>
-          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
-      </repository>
-      <snapshotRepository>
-          <id>snapshots</id>
-          <name>pillarproject-snapshots</name>
-          <url>https://pillarproject.jfrog.io/pillarproject/Signal-backend</url>
-      </snapshotRepository>
-  </distributionManagement>
 
 </project>
