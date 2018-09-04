@@ -15,6 +15,13 @@
             </includes>
         </fileSet>
         <fileSet>
+          <directory>${project.basedir}/setup</directory>
+          <outputDirectory>/setup</outputDirectory>
+          <includes>
+            <include>*</include>
+          </includes>
+        </fileSet>
+        <fileSet>
             <directory>${project.build.directory}</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
