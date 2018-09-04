@@ -32,10 +32,13 @@ jobs:
       - store_artifacts: # store the jar as an artifact
           path: target/TextSecureServer-1.66-bin.tar.gz
 
+  
       - run:
-         name: Upload signal tar to artifactory
-         command: curl -u $username:$password -T target/TextSecureServer-1.66-bin.tar.gz $SIGNAL_ARTIFACTORY_URL/signal-backend:$CIRCLE_BUILD_NUM.tar.gz
-
+          name: Publish Artifact and Notification
+          command: |
+            export publishedArtifact="SIGNAL_ARTIFACTORY_URL/signal-backend:$CIRCLE_BUILD_NUM.tar.gz"
+            curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
+            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
 
 workflows:
   version: 2
