@@ -32,7 +32,7 @@ jobs:
       - store_artifacts: # store the jar as an artifact
           path: target/TextSecureServer-1.66-bin.tar.gz
 
-  
+
       - run:
           name: Publish Artifact and Notification
           command: |
@@ -48,4 +48,4 @@ workflows:
           filters:
             branches:
               only:
-                - aws-deployed-version
+                - master
