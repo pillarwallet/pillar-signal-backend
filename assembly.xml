@@ -16,14 +16,14 @@
         </fileSet>
         <fileSet>
           <directory>${project.basedir}/setup</directory>
-          <outputDirectory>/setup</outputDirectory>
+          <outputDirectory>/</outputDirectory>
           <includes>
             <include>*</include>
           </includes>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>/target</outputDirectory>
             <includes>
                 <include>${project.name}-${project.version}.jar</include>
             </includes>
