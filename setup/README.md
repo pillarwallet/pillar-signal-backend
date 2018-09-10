@@ -16,9 +16,12 @@ tar -C pillar-signal-backend -xzf  signal-backend-{VERSION}.tar.gz
 
 RUN
 
-./start.sh
+Migrate the databases
 
+java -jar target/TextSecureServer-*.jar accountdb migrate config/production.yml
 
-STOP
+java -jar target/TextSecureServer-*.jar messagedb migrate config/production.yml
 
-./stop.sh
+Run
+
+java -jar target/TextSecureServer-*.jar server config/production.yml
