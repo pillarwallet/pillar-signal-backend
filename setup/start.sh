@@ -1,5 +1,4 @@
 #!/bin/bash
 
 
-
-make -f Makefile run
+java -jar target/TextSecureServer-*.jar server config/production.yml
