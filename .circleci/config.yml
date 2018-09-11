@@ -48,4 +48,4 @@ workflows:
           filters:
             branches:
               only:
-                - signal-pipline
+                - master
