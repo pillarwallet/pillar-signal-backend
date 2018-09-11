@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Publish Artifact and Notification
           command: |
-            export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend:$CIRCLE_BUILD_NUM.tar.gz"
+            export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
             chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
 
