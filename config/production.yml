@@ -9,7 +9,7 @@ twilio: # Twilio gateway configuration
     - # ...
     - # Nth number
   messagingServicesId: "MG2006dc753afd3e8b7d9bdc6380917dd7"  # demo Jude
-  localDomain: "https://signal-backend.pillarproject.io/" # Domain Twilio can connect back to for calls. Should be domain of your service.
+  localDomain: "https://signal.pillarproject.io/" # Domain Twilio can connect back to for calls. Should be domain of your service.
 
 push:
   queueSize: 1000 # Size of push pending queue
