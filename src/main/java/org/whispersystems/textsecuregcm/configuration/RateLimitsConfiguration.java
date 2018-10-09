@@ -38,8 +38,14 @@ public class RateLimitsConfiguration {
   @JsonProperty
   private RateLimitConfiguration contactQueries = new RateLimitConfiguration(50000, 50000);
 
+  /**
+   * We decided to increase this limit for developers and QA.
+   * This will allow developers and QA to get more prekeys for the app testing.
+   * 
+   * Default value: new RateLimitConfiguration(3, 1.0 / 10.0).
+   */
   @JsonProperty
-  private RateLimitConfiguration prekeys = new RateLimitConfiguration(3, 1.0 / 10.0);
+  private RateLimitConfiguration prekeys = new RateLimitConfiguration(60, 60);
 
   @JsonProperty
   private RateLimitConfiguration messages = new RateLimitConfiguration(60, 60);
