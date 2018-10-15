@@ -34,7 +34,7 @@ messageStore: # Postgresql database configuration for message store
   driverClass: org.postgresql.Driver
   user: postgres
   password: YYWWvNGCa8Gz
-  url: postgres://postgres:YYWWvNGCa8Gz@ec2-54-217-245-66.eu-west-1.compute.amazonaws.com:5432/messagestore
+  url: jdbc:postgresql://signal-db.c8ky9mrwf5wc.eu-west-2.rds.amazonaws.com:5432/messagestore
 attachments: # AWS S3 configuration
   accessKey: none
   accessSecret: none
@@ -50,7 +50,7 @@ database: # Postgresql database configuration
   driverClass: org.postgresql.Driver
   user: postgres
   password: YYWWvNGCa8Gz
-  url: postgres://postgres:YYWWvNGCa8Gz@ec2-54-217-245-66.eu-west-1.compute.amazonaws.com:5432/pillarmessaging
+  url: jdbc:postgresql://signal-db.c8ky9mrwf5wc.eu-west-2.rds.amazonaws.com:5432/pillarmessaging
 apn: # Apple Push Notifications configuration
   bundleId: none
   pushCertificate: none
