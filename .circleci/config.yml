@@ -5,7 +5,7 @@ jobs:
     working_directory: ~/pillar-signal-backend # directory where steps will run
 
     docker: # run the steps with Docker
-      - image: circleci/openjdk:8-jdk-browsers
+      - image: maven:3.5.4-jdk-8-alpine
 
     environment:
       SIGNAL_VERSION: 1.66
