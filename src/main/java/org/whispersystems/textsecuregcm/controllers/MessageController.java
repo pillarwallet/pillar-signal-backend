@@ -165,24 +165,24 @@ public class MessageController {
                                    @PathParam("timestamp") long timestamp)
       throws IOException
   {
-    try {
       WebSocketConnection.messageTime.update(System.currentTimeMillis() - timestamp);
 
       Optional<OutgoingMessageEntity> message = messagesManager.delete(account.getNumber(),
                                                                        account.getAuthenticatedDevice().get().getId(),
                                                                        source, timestamp);
-
-      if (message.isPresent() && message.get().getType() != Envelope.Type.RECEIPT_VALUE) {
-        receiptSender.sendReceipt(account,
-                                  message.get().getSource(),
-                                  message.get().getTimestamp(),
-                                  Optional.fromNullable(message.get().getRelay()));
-      }
-    } catch (NotPushRegisteredException e) {
-      logger.info("User no longer push registered for delivery receipt: " + e.getMessage());
-    } catch (NoSuchUserException | TransientPushFailureException e) {
-      logger.warn("Sending delivery receipt", e);
-    }
+      // commented out to prevent receipt push notifications
+//    try {
+//      if (message.isPresent() && message.get().getType() != Envelope.Type.RECEIPT_VALUE) {
+//        receiptSender.sendReceipt(account,
+//                                  message.get().getSource(),
+//                                  message.get().getTimestamp(),
+//                                  Optional.fromNullable(message.get().getRelay()));
+//      }
+//    } catch (NotPushRegisteredException e) {
+//      logger.info("User no longer push registered for delivery receipt: " + e.getMessage());
+//    } catch (NoSuchUserException | TransientPushFailureException e) {
+//      logger.warn("Sending delivery receipt", e);
+//    }
   }
 
 

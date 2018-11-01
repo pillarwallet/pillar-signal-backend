@@ -116,10 +116,15 @@
             <version>0.9.3</version>
         </dependency>
         <dependency>
-            <groupId>org.whispersystems</groupId>
+            <!--<groupId>org.whispersystems</groupId>-->
+            <!--<artifactId>gcm-sender-async</artifactId>-->
+            <!--<version>0.1.4</version>-->
+            <groupId>com.github.poocart</groupId>
             <artifactId>gcm-sender-async</artifactId>
-            <version>0.1.4</version>
+            <version>v0.1.4-1</version>
         </dependency>
+
+
 
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>
@@ -308,6 +313,10 @@
          <name>Repository from Bintray</name>
          <url>http://dl.bintray.com/ethereum/maven</url>
        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
 </project>

@@ -66,7 +66,6 @@ public class GCMSender implements Managed {
     Message.Builder builder = Message.newBuilder()
                                      .withDestination(message.getGcmId())
                                      .withPriority("high");
-
     String  key     = message.isReceipt() ? "receipt" : "notification";
     JSONObject msgJSONO = new JSONObject();
     try {
@@ -75,8 +74,11 @@ public class GCMSender implements Managed {
       e.printStackTrace();
     }
     Message request = builder
-            .withDataPart(key, "")
+            .withCollapseKey("signal_" + message.getNumber())
+            .withNotificationPart("title", "Pillar Wallet chat")
+            .withNotificationPart("body", "New message from " + message.getNumber())
             .withDataPart("msg", msgJSONO.toString())
+//            .withDataPart(key, "") commented since not needed
             .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
