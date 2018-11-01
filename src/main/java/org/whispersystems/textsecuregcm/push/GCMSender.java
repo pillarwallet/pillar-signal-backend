@@ -70,6 +70,7 @@ public class GCMSender implements Managed {
     JSONObject msgJSONO = new JSONObject();
     try {
       msgJSONO.put("type", "signal");
+      msgJSONO.put("sender", message.getNumber());
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -78,7 +79,8 @@ public class GCMSender implements Managed {
             .withNotificationPart("title", "Pillar Wallet chat")
             .withNotificationPart("body", "New message from " + message.getNumber())
             .withDataPart("msg", msgJSONO.toString())
-//            .withDataPart(key, "") commented since not needed
+            .withDataPart(key, "")
+//            commented since not needed and fails on client's FCM foreground push handler
             .build();
 
     ListenableFuture<Result> future = signalSender.send(request, message);
