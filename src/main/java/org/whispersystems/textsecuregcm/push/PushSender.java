@@ -74,7 +74,6 @@ public class PushSender implements Managed {
   public void sendMessage(final Account account, final Device device, final Envelope message, final boolean silent)
       throws NotPushRegisteredException
   {
-
     logger.info("               PUSH SENDER SEND MESSAGE               ");
 
     if (device.getGcmId() == null && device.getApnId() == null && !device.getFetchesMessages()) {
@@ -114,6 +113,8 @@ public class PushSender implements Managed {
 
   private void sendGcmMessage(Account account, Device device, Envelope message) {
     logger.info("               PUSH SENDER SEND GCM MESSAGE               ");
+    if (message.getType() == Envelope.Type.RECEIPT) return; // force to not send receipt notifications
+
     DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.GCM);
 
     if (!deliveryStatus.isDelivered()) {
@@ -124,7 +125,6 @@ public class PushSender implements Managed {
   private void sendGcmNotification(Account account, Device device) {
     GcmMessage gcmMessage = new GcmMessage(device.getGcmId(), account.getNumber(),
                                            (int)device.getId(), false);
-
     gcmSender.sendMessage(gcmMessage);
   }
 
