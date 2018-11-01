@@ -79,7 +79,7 @@ public class GCMSender implements Managed {
             .withNotificationPart("title", "Pillar Wallet chat")
             .withNotificationPart("body", "New message from " + message.getNumber())
             .withDataPart("msg", msgJSONO.toString())
-            .withDataPart(key, "")
+//            .withDataPart(key, "")
 //            commented since not needed and fails on client's FCM foreground push handler
             .build();
 
