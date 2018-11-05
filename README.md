@@ -1,6 +1,14 @@
 Signal-Server
 =================
 
+Firebase Cloud Messaging setup
+-------------
+
+You must provide Firebase auth JSON file as defined on config file for fcm.jsonPath setting.
+
+Firebase auth JSON file can be obtained by following this link – https://console.firebase.google.com/project/_/settings/serviceaccounts/adminsdk.
+
+
 Documentation
 -------------
 

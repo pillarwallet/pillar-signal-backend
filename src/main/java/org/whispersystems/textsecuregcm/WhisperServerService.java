@@ -20,6 +20,7 @@ import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.base.Optional;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
@@ -100,7 +101,10 @@ import org.whispersystems.textsecuregcm.util.ToshiAuthenticationFilter;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletRegistration;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.Security;
+import java.util.Arrays;
 import java.util.EnumSet;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -169,6 +173,14 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     JedisPool          cacheClient        = cacheClientFactory.getRedisClientPool();
     JedisPool          directoryClient    = new RedisClientFactory(config.getDirectoryConfiguration().getUrl()).getRedisClientPool();
 
+    String fcmAccessToken;
+    GoogleCredential googleCredential = GoogleCredential
+            .fromStream(new FileInputStream(config.getFcmConfiguration().getJsonPath()))
+            .createScoped(Arrays.asList(new String[]{ "https://www.googleapis.com/auth/firebase.messaging" }));
+
+    googleCredential.refreshToken();
+    fcmAccessToken = googleCredential.getAccessToken();
+
     DirectoryManager           directory                  = new DirectoryManager(directoryClient);
     PendingAccountsManager     pendingAccountsManager     = new PendingAccountsManager(pendingAccounts, cacheClient);
     PendingDevicesManager      pendingDevicesManager      = new PendingDevicesManager (pendingDevices, cacheClient );
@@ -179,7 +191,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     DispatchManager            dispatchManager            = new DispatchManager(cacheClientFactory, Optional.<DispatchChannel>of(deadLetterHandler));
     PubSubManager              pubSubManager              = new PubSubManager(cacheClient, dispatchManager);
     APNSender                  apnSender                  = new APNSender(accountsManager, config.getApnConfiguration());
-    GCMSender                  gcmSender                  = new GCMSender(accountsManager, config.getGcmConfiguration().getApiKey());
+    GCMSender                  gcmSender                  = new GCMSender(accountsManager, fcmAccessToken, config.getFcmConfiguration().getProjectNumber());
     WebsocketSender            websocketSender            = new WebsocketSender(messagesManager, pubSubManager);
     AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager                 );
     FederatedPeerAuthenticator federatedPeerAuthenticator = new FederatedPeerAuthenticator(config.getFederationConfiguration());

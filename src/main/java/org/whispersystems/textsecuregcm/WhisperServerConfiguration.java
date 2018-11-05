@@ -17,19 +17,7 @@
 package org.whispersystems.textsecuregcm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.whispersystems.textsecuregcm.configuration.ApnConfiguration;
-import org.whispersystems.textsecuregcm.configuration.FederationConfiguration;
-import org.whispersystems.textsecuregcm.configuration.GcmConfiguration;
-import org.whispersystems.textsecuregcm.configuration.MaxDeviceConfiguration;
-import org.whispersystems.textsecuregcm.configuration.ProfilesConfiguration;
-import org.whispersystems.textsecuregcm.configuration.PushConfiguration;
-import org.whispersystems.textsecuregcm.configuration.RateLimitsConfiguration;
-import org.whispersystems.textsecuregcm.configuration.RedPhoneConfiguration;
-import org.whispersystems.textsecuregcm.configuration.RedisConfiguration;
-import org.whispersystems.textsecuregcm.configuration.AttachmentsConfiguration;
-import org.whispersystems.textsecuregcm.configuration.TestDeviceConfiguration;
-import org.whispersystems.textsecuregcm.configuration.TurnConfiguration;
-import org.whispersystems.textsecuregcm.configuration.TwilioConfiguration;
+import org.whispersystems.textsecuregcm.configuration.*;
 import org.whispersystems.websocket.configuration.WebSocketConfiguration;
 
 import org.toshi.mixpanel.MixpanelConfiguration;
@@ -128,9 +116,13 @@ public class WhisperServerConfiguration extends Configuration {
   private TurnConfiguration turn;
 
   @Valid
-  @NotNull
   @JsonProperty
   private GcmConfiguration gcm;
+
+  @Valid
+  @NotNull
+  @JsonProperty
+  private FcmConfiguration fcm;
 
   @Valid
   @NotNull
@@ -198,6 +190,10 @@ public class WhisperServerConfiguration extends Configuration {
 
   public GcmConfiguration getGcmConfiguration() {
     return gcm;
+  }
+
+  public FcmConfiguration getFcmConfiguration() {
+    return fcm;
   }
 
   public ApnConfiguration getApnConfiguration() {

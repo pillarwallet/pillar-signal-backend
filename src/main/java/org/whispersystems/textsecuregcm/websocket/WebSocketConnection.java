@@ -152,7 +152,7 @@ public class WebSocketConnection implements DispatchChannel {
     boolean fallback   = !message.getSource().equals(account.getNumber()) && message.getType() != Envelope.Type.RECEIPT;
 
     try {
-      pushSender.sendQueuedNotification(account, device, queueDepth, fallback);
+      pushSender.sendQueuedNotification(account, device, queueDepth, fallback, message.getSource());
     } catch (NotPushRegisteredException | TransientPushFailureException e) {
       logger.warn("requeueMessage", e);
     }
