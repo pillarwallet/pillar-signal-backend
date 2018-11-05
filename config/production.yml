@@ -57,9 +57,10 @@ apn: # Apple Push Notifications configuration
   pushCertificate: none
   pushKey: none
 
-gcm: # GCM Configuration
-  senderId: 811306482558
+fcm: # FCM Configuration
+  projectNumber: 811306482558
   apiKey: AAAAvOWie34:APA91bEsQ2G7iHyAjZFmXTvzN6ox_HKz2w6XmPKmUGY4FErvTjbz16KCsEnyV7bGaOYN4yLRVkof8oL9fFv5BAFi3kTsOOgQnuI7KtWpW7Rsl66f8gTEW6NH2Bp1lA-K6DYKBi7HGO48
+  jsonPath: config/firebase-auth.json
 
 server:
   applicationConnectors:

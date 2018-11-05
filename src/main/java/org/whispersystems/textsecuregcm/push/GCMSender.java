@@ -55,6 +55,11 @@ public class GCMSender implements Managed {
     this.signalSender    = new Sender(signalKey, 50);
   }
 
+  public GCMSender(AccountsManager accountsManager, String signalKey, String projectNumber) {
+    this.accountsManager = accountsManager;
+    this.signalSender    = new Sender(signalKey, 50, String.format("https://fcm.googleapis.com/v1/projects/%s/messages:send", projectNumber));
+  }
+
   @VisibleForTesting
   public GCMSender(AccountsManager accountsManager, Sender sender, ExecutorService executor) {
     this.accountsManager = accountsManager;
@@ -63,21 +68,41 @@ public class GCMSender implements Managed {
   }
 
   public void sendMessage(GcmMessage message) {
-    Message.Builder builder = Message.newBuilder()
-                                     .withDestination(message.getGcmId())
-                                     .withPriority("high");
+    sendMessage(message, null);
+  }
+
+  public void sendMessage(GcmMessage message, String sender) {
+    Message.Builder builder = Message.newBuilder().withDestination(message.getGcmId());
+
     String  key     = message.isReceipt() ? "receipt" : "notification";
+    String collapseKey = "signal_" + message.getNumber();
+
     JSONObject msgJSONO = new JSONObject();
+    JSONObject apnsJSONO = new JSONObject();
+    JSONObject androidJSONO = new JSONObject();
+
     try {
+
       msgJSONO.put("type", "signal");
-      msgJSONO.put("sender", message.getNumber());
+      msgJSONO.put("sender", sender);
+
+      androidJSONO.put("priority","high");
+      androidJSONO.put("collapseKey", collapseKey);
+      androidJSONO.put("notification", new JSONObject()
+              .put("tag", collapseKey));
+
+      apnsJSONO.put("headers", new JSONObject()
+              .put("apns-collapse-id", collapseKey));
+
     } catch (JSONException e) {
       e.printStackTrace();
     }
+
     Message request = builder
-            .withCollapseKey("signal_" + message.getNumber())
+            .withAndroid(androidJSONO.toString())
+            .withApns(apnsJSONO.toString())
             .withNotificationPart("title", "Pillar Wallet chat")
-            .withNotificationPart("body", "New message from " + message.getNumber())
+            .withNotificationPart("body", "New message" + (sender != null && !sender.isEmpty() ? String.format(" from %s", sender) : " received"))
             .withDataPart("msg", msgJSONO.toString())
 //            .withDataPart(key, "")
 //            commented since not needed and fails on client's FCM foreground push handler
