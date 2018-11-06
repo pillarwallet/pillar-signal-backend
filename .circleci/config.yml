@@ -18,7 +18,7 @@ jobs:
           name: Authenticate with FCM
           command: |
             touch config/firebase-auth.json
-            export $FIREBASE_AUTH_JSON_BASE64_DECODED=$(echo "$FIREBASE_AUTH_JSON_BASE64_ENCODED" | base64 -d)
+            export FIREBASE_AUTH_JSON_BASE64_DECODED=$(echo "$FIREBASE_AUTH_JSON_BASE64_ENCODED" | base64 -d)
             echo $FIREBASE_AUTH_JSON_BASE64_DECODED > config/firebase-auth.json
 
       - restore_cache: # restore the saved cache after the first run or if `pom.xml` has changed
