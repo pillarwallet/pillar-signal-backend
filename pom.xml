@@ -121,10 +121,14 @@
             <!--<version>0.1.4</version>-->
             <groupId>com.github.poocart</groupId>
             <artifactId>gcm-sender-async</artifactId>
-            <version>v0.1.4-1</version>
+            <version>v0.1.5-1</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.25.0</version>
+        </dependency>
 
         <dependency>
             <groupId>org.glassfish.jersey.test-framework.providers</groupId>

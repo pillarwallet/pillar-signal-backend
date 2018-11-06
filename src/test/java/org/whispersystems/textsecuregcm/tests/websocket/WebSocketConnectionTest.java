@@ -251,7 +251,7 @@ public class WebSocketConnectionTest {
 
     verify(receiptSender, times(1)).sendReceipt(eq(account), eq("sender2"), eq(secondMessage.getTimestamp()), eq(Optional.<String>absent()));
     verify(websocketSender, times(1)).queueMessage(eq(account), eq(device), any(Envelope.class));
-    verify(pushSender, times(1)).sendQueuedNotification(eq(account), eq(device), eq(10), eq(true));
+    verify(pushSender, times(1)).sendQueuedNotification(eq(account), eq(device), eq(10), eq(true), eq(firstMessage.getSource()));
 
     connection.onDispatchUnsubscribed(websocketAddress.serialize());
     verify(client).close(anyInt(), anyString());
