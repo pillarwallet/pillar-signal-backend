@@ -18,7 +18,8 @@ jobs:
           name: Authenticate with FCM
           command: |
             touch config/firebase-auth.json
-            echo $(echo "$FIREBASE_AUTH_JSON_BASE64_ENCODED" | base64 --decode) > config/firebase-auth.json
+            export $FIREBASE_AUTH_JSON_BASE64_DECODED=$(echo "$FIREBASE_AUTH_JSON_BASE64_ENCODED" | base64 --decode)
+            echo $FIREBASE_AUTH_JSON_BASE64_DECODED > config/firebase-auth.json
 
       - restore_cache: # restore the saved cache after the first run or if `pom.xml` has changed
           key: signal-backend-{{ checksum "pom.xml" }}
