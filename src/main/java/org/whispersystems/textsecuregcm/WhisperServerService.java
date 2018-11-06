@@ -173,13 +173,9 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     JedisPool          cacheClient        = cacheClientFactory.getRedisClientPool();
     JedisPool          directoryClient    = new RedisClientFactory(config.getDirectoryConfiguration().getUrl()).getRedisClientPool();
 
-    String fcmAccessToken;
     GoogleCredential googleCredential = GoogleCredential
             .fromStream(new FileInputStream(config.getFcmConfiguration().getJsonPath()))
             .createScoped(Arrays.asList(new String[]{ "https://www.googleapis.com/auth/firebase.messaging" }));
-
-    googleCredential.refreshToken();
-    fcmAccessToken = googleCredential.getAccessToken();
 
     DirectoryManager           directory                  = new DirectoryManager(directoryClient);
     PendingAccountsManager     pendingAccountsManager     = new PendingAccountsManager(pendingAccounts, cacheClient);
@@ -191,7 +187,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     DispatchManager            dispatchManager            = new DispatchManager(cacheClientFactory, Optional.<DispatchChannel>of(deadLetterHandler));
     PubSubManager              pubSubManager              = new PubSubManager(cacheClient, dispatchManager);
     APNSender                  apnSender                  = new APNSender(accountsManager, config.getApnConfiguration());
-    GCMSender                  gcmSender                  = new GCMSender(accountsManager, fcmAccessToken, config.getFcmConfiguration().getProjectNumber());
+    GCMSender                  gcmSender                  = new GCMSender(accountsManager, googleCredential, config.getFcmConfiguration().getProjectNumber());
     WebsocketSender            websocketSender            = new WebsocketSender(messagesManager, pubSubManager);
     AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager                 );
     FederatedPeerAuthenticator federatedPeerAuthenticator = new FederatedPeerAuthenticator(config.getFederationConfiguration());

@@ -3,6 +3,7 @@ package org.whispersystems.textsecuregcm.push;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureCallback;
@@ -49,22 +50,20 @@ public class GCMSender implements Managed {
   private final AccountsManager   accountsManager;
   private final Sender            signalSender;
   private       ExecutorService   executor;
+  private       GoogleCredential  googleCredential;
 
-  public GCMSender(AccountsManager accountsManager, String signalKey) {
+  public GCMSender(AccountsManager accountsManager, GoogleCredential googleCredential, String projectNumber) {
     this.accountsManager = accountsManager;
-    this.signalSender    = new Sender(signalKey, 50);
-  }
-
-  public GCMSender(AccountsManager accountsManager, String signalKey, String projectNumber) {
-    this.accountsManager = accountsManager;
-    this.signalSender    = new Sender(signalKey, 50, String.format("https://fcm.googleapis.com/v1/projects/%s/messages:send", projectNumber));
+    this.googleCredential = googleCredential;
+    this.signalSender    = new Sender(50, String.format("https://fcm.googleapis.com/v1/projects/%s/messages:send", projectNumber));
   }
 
   @VisibleForTesting
   public GCMSender(AccountsManager accountsManager, Sender sender, ExecutorService executor) {
-    this.accountsManager = accountsManager;
-    this.signalSender    = sender;
-    this.executor        = executor;
+    this.accountsManager  = accountsManager;
+    this.signalSender     = sender;
+    this.executor         = executor;
+    this.googleCredential = new GoogleCredential();
   }
 
   public void sendMessage(GcmMessage message) {
@@ -73,6 +72,17 @@ public class GCMSender implements Managed {
 
   public void sendMessage(GcmMessage message, String sender) {
     Message.Builder builder = Message.newBuilder().withDestination(message.getGcmId());
+
+    // token is short lived, flow recommended in Google API documentation,
+    // important: it doesn't refresh from remote until it's actually expired
+    try {
+      googleCredential.refreshToken();
+    } catch (IOException | NullPointerException e) {
+      e.printStackTrace();
+      logger.error("Unable to retrieve Google Credentials refresh token: " + e.getMessage());
+      return;
+    }
+    signalSender.setApiKey(googleCredential.getAccessToken());
 
     String  key     = message.isReceipt() ? "receipt" : "notification";
     String collapseKey = "signal_" + message.getNumber();
@@ -96,6 +106,8 @@ public class GCMSender implements Managed {
 
     } catch (JSONException e) {
       e.printStackTrace();
+      logger.error("Unable to generate notification JSON: " + e.getMessage());
+      return;
     }
 
     Message request = builder

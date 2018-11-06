@@ -121,7 +121,7 @@
             <!--<version>0.1.4</version>-->
             <groupId>com.github.poocart</groupId>
             <artifactId>gcm-sender-async</artifactId>
-            <version>v0.1.5-1</version>
+            <version>a138aebdad</version>
         </dependency>
 
         <dependency>
