@@ -74,15 +74,20 @@ public class GCMSender implements Managed {
     Message.Builder builder = Message.newBuilder().withDestination(message.getGcmId());
 
     // token is short lived, flow recommended in Google API documentation,
-    // important: it doesn't refresh from remote until it's actually expired
-    try {
-      googleCredential.refreshToken();
-    } catch (IOException | NullPointerException e) {
-      e.printStackTrace();
-      logger.error("Unable to retrieve Google Credentials refresh token: " + e.getMessage());
-      return;
+    // token lifetime is 60 minutes, refresh if 2 left
+    String fcmAccessToken = googleCredential.getAccessToken();
+    if (fcmAccessToken == null || googleCredential.getExpiresInSeconds() < 120) {
+        try {
+          googleCredential.refreshToken();
+          fcmAccessToken = googleCredential.getAccessToken();
+        } catch (IOException | NullPointerException e) {
+          e.printStackTrace();
+          logger.error("Unable to retrieve Google Credentials refresh token: " + e.getMessage());
+          return;
+      }
     }
-    signalSender.setApiKey(googleCredential.getAccessToken());
+
+    signalSender.setApiKey(fcmAccessToken);
 
     String  key     = message.isReceipt() ? "receipt" : "notification";
     String collapseKey = "signal_" + message.getNumber();
