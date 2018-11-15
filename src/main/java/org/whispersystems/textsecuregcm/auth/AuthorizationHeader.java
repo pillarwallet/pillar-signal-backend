@@ -40,6 +40,9 @@ public class AuthorizationHeader {
 //      return new AuthorizationHeader(numberAndId[0],
 //                                     numberAndId.length > 1 ? Long.parseLong(numberAndId[1]) : 1,
 //                                     password);
+//      commenting this out because username with dots gets split and can fail if username is contains another string,
+//      using string with dots is valid and safe approach
+
       return new AuthorizationHeader(user, 1, password);
     } catch (NumberFormatException nfe) {
       throw new InvalidAuthorizationHeaderException(nfe);
