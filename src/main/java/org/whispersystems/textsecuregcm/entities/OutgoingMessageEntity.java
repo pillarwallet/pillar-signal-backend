@@ -29,11 +29,28 @@ public class OutgoingMessageEntity {
   @JsonProperty
   private byte[] content;
 
+  @JsonProperty
+  private String tag;
+
   public OutgoingMessageEntity() {}
 
   public OutgoingMessageEntity(long id, int type, String relay, long timestamp,
                                String source, int sourceDevice, byte[] message,
-                               byte[] content)
+                               byte[] content) {
+    this.id           = id;
+    this.type         = type;
+    this.relay        = relay;
+    this.timestamp    = timestamp;
+    this.source       = source;
+    this.sourceDevice = sourceDevice;
+    this.message      = message;
+    this.content      = content;
+    this.tag          = null;
+  }
+
+  public OutgoingMessageEntity(long id, int type, String relay, long timestamp,
+                               String source, int sourceDevice, byte[] message,
+                               byte[] content, String tag)
   {
     this.id           = id;
     this.type         = type;
@@ -43,6 +60,7 @@ public class OutgoingMessageEntity {
     this.sourceDevice = sourceDevice;
     this.message      = message;
     this.content      = content;
+    this.tag          = tag;
   }
 
   public int getType() {
@@ -77,4 +95,7 @@ public class OutgoingMessageEntity {
     return id;
   }
 
+  public String getTag() {
+    return tag == null || tag.isEmpty() ? "chat" : tag;
+  }
 }

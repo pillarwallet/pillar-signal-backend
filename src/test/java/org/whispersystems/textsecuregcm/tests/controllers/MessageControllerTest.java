@@ -104,7 +104,7 @@ public class MessageControllerTest {
 
     assertThat("Good Response", response.getStatus(), is(equalTo(200)));
 
-    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(false));
+    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(false), anyString());
   }
 
   @Test
@@ -157,7 +157,7 @@ public class MessageControllerTest {
 
     assertThat("Good Response Code", response.getStatus(), is(equalTo(200)));
 
-    verify(pushSender, times(2)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(false));
+    verify(pushSender, times(2)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(false), anyString());
   }
 
   @Test

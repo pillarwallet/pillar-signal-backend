@@ -68,6 +68,10 @@ public class WebsocketSender {
   }
 
   public DeliveryStatus sendMessage(Account account, Device device, Envelope message, Type channel) {
+    return sendMessage(account, device, message, channel, null);
+  }
+
+  public DeliveryStatus sendMessage(Account account, Device device, Envelope message, Type channel, String messageTag) {
     WebsocketAddress address       = new WebsocketAddress(account.getNumber(), device.getId());
     PubSubMessage    pubSubMessage = PubSubMessage.newBuilder()
                                                   .setType(PubSubMessage.Type.DELIVER)
@@ -85,16 +89,20 @@ public class WebsocketSender {
       else if (channel == Type.GCM) gcmOfflineMeter.mark();
       else                          websocketOfflineMeter.mark();
 
-      int queueDepth = queueMessage(account, device, message);
+      int queueDepth = queueMessage(account, device, message, messageTag);
       return new DeliveryStatus(false, queueDepth);
     }
   }
 
   public int queueMessage(Account account, Device device, Envelope message) {
+    return queueMessage(account, device, message, null);
+  }
+
+  public int queueMessage(Account account, Device device, Envelope message, String messageTag) {
     websocketRequeueMeter.mark();
 
     WebsocketAddress address    = new WebsocketAddress(account.getNumber(), device.getId());
-    int              queueDepth = messagesManager.insert(account.getNumber(), device.getId(), message);
+    int              queueDepth = messagesManager.insert(account.getNumber(), device.getId(), message, messageTag);
 
     pubSubManager.publish(address, PubSubMessage.newBuilder()
                                                 .setType(PubSubMessage.Type.QUERY_DB)
