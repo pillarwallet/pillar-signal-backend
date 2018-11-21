@@ -74,5 +74,12 @@
         <sql>CREATE RULE bounded_message_queue AS ON INSERT TO messages DO ALSO DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE destination = NEW.destination AND destination_device = NEW.destination_device ORDER BY timestamp DESC OFFSET 1000);</sql>
     </changeSet>
 
+    <changeSet id="5" author="deimantas">
+        <addColumn tableName="messages">
+            <column name="message_tag" type="text">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

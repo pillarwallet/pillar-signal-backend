@@ -17,7 +17,11 @@ public class MessagesManager {
   }
 
   public int insert(String destination, long destinationDevice, Envelope message) {
-    return this.messages.store(message, destination, destinationDevice) + 1;
+    return insert(destination, destinationDevice, message, null);
+  }
+
+  public int insert(String destination, long destinationDevice, Envelope message, String messageTag) {
+    return this.messages.store(message, destination, destinationDevice, messageTag) + 1;
   }
 
   public OutgoingMessageEntityList getMessagesForDevice(String destination, long destinationDevice) {

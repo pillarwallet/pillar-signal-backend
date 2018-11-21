@@ -74,6 +74,12 @@ public class PushSender implements Managed {
   public void sendMessage(final Account account, final Device device, final Envelope message, final boolean silent)
       throws NotPushRegisteredException
   {
+    sendMessage(account, device, message, silent, null);
+  }
+
+  public void sendMessage(final Account account, final Device device, final Envelope message, final boolean silent, final String messageTag)
+      throws NotPushRegisteredException
+  {
     logger.info("               PUSH SENDER SEND MESSAGE               ");
 
     if (device.getGcmId() == null && device.getApnId() == null && !device.getFetchesMessages()) {
@@ -84,11 +90,11 @@ public class PushSender implements Managed {
       executor.execute(new Runnable() {
         @Override
         public void run() {
-          sendSynchronousMessage(account, device, message, silent);
+          sendSynchronousMessage(account, device, message, silent, messageTag);
         }
       });
     } else {
-      sendSynchronousMessage(account, device, message, silent);
+      sendSynchronousMessage(account, device, message, silent, messageTag);
     }
   }
 
@@ -111,17 +117,25 @@ public class PushSender implements Managed {
   }
 
   private void sendSynchronousMessage(Account account, Device device, Envelope message, boolean silent) {
-    if      (device.getGcmId() != null)   sendGcmMessage(account, device, message);
+    sendSynchronousMessage(account, device, message, silent, null);
+  }
+
+  private void sendSynchronousMessage(Account account, Device device, Envelope message, boolean silent, String messageTag) {
+    if      (device.getGcmId() != null)   sendGcmMessage(account, device, message, messageTag);
     else if (device.getApnId() != null)   sendApnMessage(account, device, message, silent);
     else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message);
     else                                  throw new AssertionError();
   }
 
   private void sendGcmMessage(Account account, Device device, Envelope message) {
+    sendGcmMessage(account, device, message, null);
+  }
+
+  private void sendGcmMessage(Account account, Device device, Envelope message, String messageTag) {
     logger.info("               PUSH SENDER SEND GCM MESSAGE               ");
     if (message.getType() == Envelope.Type.RECEIPT) return; // force to not send receipt notifications
 
-    DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.GCM);
+    DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.GCM, messageTag);
 
     if (!deliveryStatus.isDelivered()) {
       sendGcmNotification(account, device, message.getSource());
