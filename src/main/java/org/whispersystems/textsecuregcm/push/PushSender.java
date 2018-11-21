@@ -121,21 +121,23 @@ public class PushSender implements Managed {
   }
 
   private void sendSynchronousMessage(Account account, Device device, Envelope message, boolean silent, String messageTag) {
-    if      (device.getGcmId() != null)   sendGcmMessage(account, device, message, messageTag);
+    if      (device.getGcmId() != null)   sendGcmMessage(account, device, message, messageTag, silent);
     else if (device.getApnId() != null)   sendApnMessage(account, device, message, silent);
     else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message);
     else                                  throw new AssertionError();
   }
 
   private void sendGcmMessage(Account account, Device device, Envelope message) {
-    sendGcmMessage(account, device, message, null);
+    sendGcmMessage(account, device, message, null, false);
   }
 
-  private void sendGcmMessage(Account account, Device device, Envelope message, String messageTag) {
+  private void sendGcmMessage(Account account, Device device, Envelope message, String messageTag, boolean silent) {
     logger.info("               PUSH SENDER SEND GCM MESSAGE               ");
     if (message.getType() == Envelope.Type.RECEIPT) return; // force to not send receipt notifications
 
     DeliveryStatus deliveryStatus = webSocketSender.sendMessage(account, device, message, WebsocketSender.Type.GCM, messageTag);
+
+    if (silent) return;
 
     if (!deliveryStatus.isDelivered()) {
       sendGcmNotification(account, device, message.getSource());
