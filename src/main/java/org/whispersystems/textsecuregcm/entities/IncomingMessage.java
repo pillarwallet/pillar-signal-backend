@@ -48,6 +48,8 @@ public class IncomingMessage {
   @JsonProperty
   private boolean silent = false;
 
+  @JsonProperty
+  private String tag;
 
   public String getDestination() {
     return destination;
@@ -79,5 +81,9 @@ public class IncomingMessage {
 
   public boolean isSilent() {
     return silent;
+  }
+
+  public String getTag() {
+    return tag == null || tag.isEmpty() ? "chat" : tag;
   }
 }

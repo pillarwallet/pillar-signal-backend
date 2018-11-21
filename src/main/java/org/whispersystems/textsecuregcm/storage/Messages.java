@@ -37,13 +37,15 @@ public abstract class Messages {
   private static final String DESTINATION_DEVICE = "destination_device";
   private static final String MESSAGE            = "message";
   private static final String CONTENT            = "content";
+  private static final String MESSAGE_TAG        = "message_tag";
 
-  @SqlQuery("INSERT INTO messages (" + TYPE + ", " + RELAY + ", " + TIMESTAMP + ", " + SOURCE + ", " + SOURCE_DEVICE + ", " + DESTINATION + ", " + DESTINATION_DEVICE + ", " + MESSAGE + ", " + CONTENT + ") " +
-            "VALUES (:type, :relay, :timestamp, :source, :source_device, :destination, :destination_device, :message, :content) " +
+  @SqlQuery("INSERT INTO messages (" + TYPE + ", " + RELAY + ", " + TIMESTAMP + ", " + SOURCE + ", " + SOURCE_DEVICE + ", " + DESTINATION + ", " + DESTINATION_DEVICE + ", " + MESSAGE + ", " + CONTENT + ", " + MESSAGE_TAG + ") " +
+            "VALUES (:type, :relay, :timestamp, :source, :source_device, :destination, :destination_device, :message, :content, :message_tag) " +
             "RETURNING (SELECT COUNT(id) FROM messages WHERE " + DESTINATION + " = :destination AND " + DESTINATION_DEVICE + " = :destination_device AND " + TYPE + " != " + Envelope.Type.RECEIPT_VALUE + ")")
   abstract int store(@MessageBinder Envelope message,
                      @Bind("destination") String destination,
-                     @Bind("destination_device") long destinationDevice);
+                     @Bind("destination_device") long destinationDevice,
+                     @Bind("message_tag") String messageTag);
 
   @Mapper(MessageMapper.class)
   @SqlQuery("SELECT * FROM messages WHERE " + DESTINATION + " = :destination AND " + DESTINATION_DEVICE + " = :destination_device  ORDER BY " + TIMESTAMP + " ASC LIMIT " + RESULT_SET_CHUNK_SIZE)
@@ -106,7 +108,8 @@ public abstract class Messages {
                                        resultSet.getString(SOURCE),
                                        resultSet.getInt(SOURCE_DEVICE),
                                        legacyMessage,
-                                       resultSet.getBytes(CONTENT));
+                                       resultSet.getBytes(CONTENT),
+                                       resultSet.getString(MESSAGE_TAG));
     }
   }
 
