@@ -122,4 +122,3 @@ workflows:
             branches:
               only:
                 - master
-                - feat/circleci-dev-config
