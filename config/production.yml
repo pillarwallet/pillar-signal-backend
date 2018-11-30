@@ -79,3 +79,6 @@ server:
       keyStorePath: config/example.keystore
       keyStorePassword: example
       validateCerts: false
+
+microServices:
+  corePlatformUrl: https://api-core.pillarproject.io
