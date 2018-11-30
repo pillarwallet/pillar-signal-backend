@@ -4,8 +4,11 @@ import org.apache.log4j.Logger;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
+import org.whispersystems.textsecuregcm.controllers.MessageController;
 import org.whispersystems.textsecuregcm.controllers.NoSuchUserException;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,7 +20,6 @@ public class CorePlatform {
     public static final String CONNECTION_STATE_ACCEPTED = "STATE_ACCEPTED";
     public static final String CONNECTION_STATE_BLOCKED = "STATE_BLOCKED";
     public static final String CONNECTION_STATE_MUTED = "STATE_MUTED";
-    public static final String CONNECTION_STATE_UNAVAILABLE = "STATE_UNAVAILABLE";
 
     public static final String ERROR_CORE_PLATFORM_FAILED = "ERROR_CORE_PLATFORM_FAILED";
 
@@ -36,9 +38,8 @@ public class CorePlatform {
     public void getConnectionState(String receiverId, String connectionAccessKey, Callback cb) {
         try {
             URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.setRequestProperty("Accept", "application/json");
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             if (connection.getResponseCode() != 200){
                 cb.onError(ERROR_CORE_PLATFORM_FAILED);
@@ -53,13 +54,10 @@ public class CorePlatform {
             br.close();
             connection.disconnect();
             JSONObject response = new JSONObject(jsonResponse.toString());
-            String state = CONNECTION_STATE_UNAVAILABLE;
-            Log.getLogger("a").debug(response.toString());
+            String state = CONNECTION_STATE_BLOCKED;
+            LoggerFactory.getLogger(MessageController.class).error(response.toString());
             if (!response.isNull("status")){
                 switch (response.getString("status")){
-                    case "blocked":
-                        state = CONNECTION_STATE_BLOCKED;
-                        break;
                     case "muted":
                         state = CONNECTION_STATE_MUTED;
                         break;
