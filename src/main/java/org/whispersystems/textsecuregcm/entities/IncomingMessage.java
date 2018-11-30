@@ -51,6 +51,12 @@ public class IncomingMessage {
   @JsonProperty
   private String tag;
 
+  @JsonProperty
+  private String connectionAccessToken;
+
+  @JsonProperty
+  private String userId;
+
   public String getDestination() {
     return destination;
   }
@@ -86,4 +92,14 @@ public class IncomingMessage {
   public String getTag() {
     return tag == null || tag.isEmpty() ? "chat" : tag;
   }
+
+
+  public String getConnectionAccessToken() {
+    return connectionAccessToken;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
 }
