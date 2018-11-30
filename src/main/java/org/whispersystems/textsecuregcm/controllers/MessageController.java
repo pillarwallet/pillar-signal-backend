@@ -217,7 +217,6 @@ public class MessageController {
                                 Device destinationDevice,
                                 long timestamp,
                                 IncomingMessage incomingMessage)
-    throws NoSuchUserException
   {
     corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getConnectionAccessToken(), new CorePlatform.Callback() {
       @Override
@@ -262,7 +261,7 @@ public class MessageController {
 
       @Override
       public void onError(String errorCode) {
-        //
+        logger.debug("CorePlatform failed: %s", errorCode);
       }
     });
   }
