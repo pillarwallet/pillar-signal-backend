@@ -59,6 +59,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import io.dropwizard.auth.Auth;
 
@@ -216,13 +218,19 @@ public class MessageController {
                                 Account destinationAccount,
                                 Device destinationDevice,
                                 long timestamp,
-                                IncomingMessage incomingMessage) throws NoSuchUserException {
-    corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getConnectionAccessToken(), new CorePlatform.Callback() {
-      @Override
-      public void onSuccess(String state) throws NoSuchUserException {
-        if (!state.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
-          boolean silent = state.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
-          try {
+                                IncomingMessage incomingMessage)
+    throws NoSuchUserException
+  {
+    Future<String> connectionState = corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getUserConnectionAccessToken());
+    String connectionStateString = null;
+    try {
+        connectionStateString = connectionState.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    if (connectionStateString != null && !connectionStateString.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
+        boolean silent = connectionStateString.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
+        try {
             Optional<byte[]> messageBody    = getMessageBody(incomingMessage);
             Optional<byte[]> messageContent = getMessageContent(incomingMessage);
 
@@ -251,18 +259,11 @@ public class MessageController {
             if (destinationDevice.isMaster() && mixpanelSender != null) {
               mixpanelSender.sendSentMessageEvent(source.getNumber());
             }
-          } catch (NotPushRegisteredException e) {
+        } catch (NotPushRegisteredException e) {
             if (destinationDevice.isMaster()) throw new NoSuchUserException(e);
             else                              logger.debug("Not registered", e);
-          }
         }
-      }
-
-      @Override
-      public void onError(String errorCode) {
-        logger.info("CorePlatform failed: " + errorCode);
-      }
-    });
+    }
   }
 
   private void sendRelayMessage(Account source,

@@ -96,7 +96,7 @@ public class FederatedControllerTest {
     when(rateLimiters.getMessagesLimiter()).thenReturn(rateLimiter);
 
     when(keysControllerV2.getSignedKey(any(Account.class))).thenReturn(Optional.of(signedPreKey));
-    when(keysControllerV2.getDeviceKeys(any(Account.class), anyString(), anyString(), any(Optional.class)))
+    when(keysControllerV2.getDeviceKeys(any(Account.class), anyString(), anyString(), any(Optional.class), any(Optional.class), any(Optional.class)))
         .thenReturn(Optional.of(preKeyResponseV2));
   }
 

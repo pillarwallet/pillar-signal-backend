@@ -1,20 +1,18 @@
 package org.whispersystems.textsecuregcm.microservices;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.whispersystems.textsecuregcm.controllers.MessageController;
-import org.whispersystems.textsecuregcm.controllers.NoSuchUserException;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 public class CorePlatform {
 
@@ -27,27 +25,26 @@ public class CorePlatform {
     public static final String ERROR_CORE_PLATFORM_FAILED = "ERROR_CORE_PLATFORM_FAILED";
     public static final String ERROR_CORE_CONNECTION_FAILED = "ERROR_CORE_CONNECTION_FAILED";
 
-    private String state;
     private String corePlatformUrl;
 
     public CorePlatform (String url){
         this.corePlatformUrl = url;
     }
 
-    public interface Callback {
-        void onSuccess(String status) throws NoSuchUserException;
-        void onError(String code);
-    }
 
-    public void getConnectionState(String receiverId, String connectionAccessKey, Callback cb) throws NoSuchUserException {
+    public Future<String> getConnectionState(String receiverId, String connectionAccessKey) {
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+        HttpsURLConnection connection = null;
         try {
             URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
-            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpsURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestProperty("User-Agent", "Signal-Java-Backend");
+            connection.setRequestProperty("User-A§gent", "Signal-Java-Backend");
             if (connection.getResponseCode() != 200){
-                cb.onError(ERROR_CORE_CONNECTION_FAILED);
-                return;
+                connection.disconnect();
+                logger.info("CorePlatform failed: %s", ERROR_CORE_CONNECTION_FAILED);
+                completableFuture.cancel(false);
+                return completableFuture;
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
             StringBuffer jsonResponse = new StringBuffer();
@@ -71,11 +68,13 @@ public class CorePlatform {
                         break;
                 }
             }
-            cb.onSuccess(state);
+            completableFuture.complete(state);
         } catch (IOException | JSONException e) {
-            cb.onError(ERROR_CORE_PLATFORM_FAILED);
-            e.printStackTrace();
+            if (connection != null) connection.disconnect();
+            logger.info("CorePlatform failed: %s", ERROR_CORE_PLATFORM_FAILED);
+            completableFuture.cancel(false);
         }
+        return completableFuture;
     }
 
 }
