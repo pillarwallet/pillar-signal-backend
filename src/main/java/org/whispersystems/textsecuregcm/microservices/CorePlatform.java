@@ -31,7 +31,6 @@ public class CorePlatform {
         this.corePlatformUrl = url;
     }
 
-
     public Future<String> getConnectionState(String receiverId, String connectionAccessKey) {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         HttpsURLConnection connection = null;
@@ -39,10 +38,10 @@ public class CorePlatform {
             URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
             connection = (HttpsURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestProperty("User-A§gent", "Signal-Java-Backend");
+            connection.setRequestProperty("User-Agent", "Signal-Java-Backend");
             if (connection.getResponseCode() != 200){
                 connection.disconnect();
-                logger.info("CorePlatform failed: %s", ERROR_CORE_CONNECTION_FAILED);
+                logger.info("CorePlatform failed: " + ERROR_CORE_CONNECTION_FAILED);
                 completableFuture.cancel(false);
                 return completableFuture;
             }
@@ -71,7 +70,7 @@ public class CorePlatform {
             completableFuture.complete(state);
         } catch (IOException | JSONException e) {
             if (connection != null) connection.disconnect();
-            logger.info("CorePlatform failed: %s", ERROR_CORE_PLATFORM_FAILED);
+            logger.info("CorePlatform failed: " + ERROR_CORE_PLATFORM_FAILED);
             completableFuture.cancel(false);
         }
         return completableFuture;
