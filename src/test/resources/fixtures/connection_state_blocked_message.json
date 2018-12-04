@@ -1,0 +1,11 @@
+{
+    "messages" : [{
+        "type" : 1,
+        "destinationDeviceId" : 1,
+        "body" : "Zm9vYmFyego",
+        "timestamp" : 1234,
+        "tag" : "tag",
+        "userId" : "blocked-user-id",
+        "userConnectionAccessToken" : "blocked-user-connection-access-token"
+    }]
+}

@@ -20,10 +20,8 @@ import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.microservices.CorePlatform;
-import org.whispersystems.textsecuregcm.push.GCMSender;
 import org.whispersystems.textsecuregcm.push.PushSender;
 import org.whispersystems.textsecuregcm.push.ReceiptSender;
-import org.whispersystems.textsecuregcm.push.WebsocketSender;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -64,7 +62,6 @@ public class MessageControllerTest {
   private  final RateLimiters           rateLimiters           = mock(RateLimiters.class          );
   private  final RateLimiter            rateLimiter            = mock(RateLimiter.class           );
   private  final CorePlatform           corePlatform           = mock(CorePlatform.class          );
-  private  final GCMSender              gcmSender              = mock(GCMSender.class             );
 
   private  final ObjectMapper mapper = new ObjectMapper();
 
@@ -293,35 +290,33 @@ public class MessageControllerTest {
   }
 
   @Test
-  public void testConnectionMuteMessage() throws Exception {
-    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
+  public void testConnectionMutedMessage() throws Exception {
+    when(corePlatform.getConnectionState(eq("muted-user-id"), eq("muted-user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
 
     Response response =
             resources.getJerseyTest()
                     .target(String.format("/v1/messages/%s", SINGLE_DEVICE_RECIPIENT))
                     .request()
                     .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/current_message_single_device.json"), IncomingMessageList.class),
+                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/connection_state_muted_message.json"), IncomingMessageList.class),
                             MediaType.APPLICATION_JSON_TYPE));
 
     Assertions.assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(200);
 
     // pushSender sendMessage with silent=true is called only once
-    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(true), anyString());
-
-    verifyNoMoreInteractions(gcmSender);
+    verify(pushSender).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(true), anyString());
   }
 
   @Test
   public void testConnectionBlockedMessage() throws Exception {
-    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
+    when(corePlatform.getConnectionState(eq("blocked-user-id"), eq("blocked-user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
 
     Response response =
             resources.getJerseyTest()
                     .target(String.format("/v1/messages/%s", SINGLE_DEVICE_RECIPIENT))
                     .request()
                     .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/current_message_single_device.json"), IncomingMessageList.class),
+                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/connection_state_blocked_message.json"), IncomingMessageList.class),
                             MediaType.APPLICATION_JSON_TYPE));
 
     Assertions.assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(404);
