@@ -132,7 +132,7 @@ public class KeysController {
     if (!userId.isPresent() || !userConnectionAccessToken.isPresent()) throw new WebApplicationException(Response.status(404).build());
     Future<String> connectionState = corePlatform.getConnectionState(userId.get(), userConnectionAccessToken.get());
     try {
-      if (!connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))  throw new WebApplicationException(Response.status(404).build());
+      if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED)) throw new WebApplicationException(Response.status(404).build());
     } catch (InterruptedException | ExecutionException e) {
       e.printStackTrace();
     }

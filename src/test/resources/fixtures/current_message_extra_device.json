@@ -3,12 +3,18 @@
         "type" : 1,
         "destinationDeviceId" : 1,
         "body" : "Zm9vYmFyego",
-        "timestamp" : 1234
+        "timestamp" : 1234,
+        "tag" : "tag",
+        "userId" : "user-id",
+        "userConnectionAccessToken" : "user-connection-access-token"
     },
     {
         "type" : 1,
         "destinationDeviceId" : 3,
         "body" : "Zm9vYmFyego",
-        "timestamp" : 1234
+        "timestamp" : 1234,
+        "tag" : "tag",
+        "userId" : "user-id",
+        "userConnectionAccessToken" : "user-connection-access-token"
     }]
 }

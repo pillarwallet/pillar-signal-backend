@@ -263,6 +263,8 @@ public class MessageController {
             if (destinationDevice.isMaster()) throw new NoSuchUserException(e);
             else                              logger.debug("Not registered", e);
         }
+    } else {
+      throw new WebApplicationException(Response.status(404).build());
     }
   }
 

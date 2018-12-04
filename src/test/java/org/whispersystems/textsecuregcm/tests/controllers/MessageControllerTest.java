@@ -2,6 +2,7 @@ package org.whispersystems.textsecuregcm.tests.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import org.assertj.core.api.Assertions;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,8 +19,11 @@ import org.whispersystems.textsecuregcm.entities.StaleDevices;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
+import org.whispersystems.textsecuregcm.microservices.CorePlatform;
+import org.whispersystems.textsecuregcm.push.GCMSender;
 import org.whispersystems.textsecuregcm.push.PushSender;
 import org.whispersystems.textsecuregcm.push.ReceiptSender;
+import org.whispersystems.textsecuregcm.push.WebsocketSender;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -33,6 +37,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
@@ -58,6 +63,8 @@ public class MessageControllerTest {
   private  final MessagesManager        messagesManager        = mock(MessagesManager.class);
   private  final RateLimiters           rateLimiters           = mock(RateLimiters.class          );
   private  final RateLimiter            rateLimiter            = mock(RateLimiter.class           );
+  private  final CorePlatform           corePlatform           = mock(CorePlatform.class          );
+  private  final GCMSender              gcmSender              = mock(GCMSender.class             );
 
   private  final ObjectMapper mapper = new ObjectMapper();
 
@@ -67,7 +74,7 @@ public class MessageControllerTest {
                                                             .addProvider(new AuthValueFactoryProvider.Binder())
                                                             .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                                                             .addResource(new MessageController(rateLimiters, pushSender, receiptSender, accountsManager,
-                                                                                               messagesManager, federatedClientManager))
+                                                                                               messagesManager, federatedClientManager, null, corePlatform))
                                                             .build();
 
 
@@ -90,6 +97,8 @@ public class MessageControllerTest {
     when(accountsManager.get(eq(MULTI_DEVICE_RECIPIENT))).thenReturn(Optional.of(multiDeviceAccount));
 
     when(rateLimiters.getMessagesLimiter()).thenReturn(rateLimiter);
+
+    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
   
   @Test
@@ -281,6 +290,43 @@ public class MessageControllerTest {
     assertThat("Good Response Code", response.getStatus(), is(equalTo(204)));
     verifyNoMoreInteractions(receiptSender);
 
+  }
+
+  @Test
+  public void testConnectionMuteMessage() throws Exception {
+    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
+
+    Response response =
+            resources.getJerseyTest()
+                    .target(String.format("/v1/messages/%s", SINGLE_DEVICE_RECIPIENT))
+                    .request()
+                    .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
+                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/current_message_single_device.json"), IncomingMessageList.class),
+                            MediaType.APPLICATION_JSON_TYPE));
+
+    Assertions.assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(200);
+
+    // pushSender sendMessage with silent=true is called only once
+    verify(pushSender, times(1)).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(true), anyString());
+
+    verifyNoMoreInteractions(gcmSender);
+  }
+
+  @Test
+  public void testConnectionBlockedMessage() throws Exception {
+    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
+
+    Response response =
+            resources.getJerseyTest()
+                    .target(String.format("/v1/messages/%s", SINGLE_DEVICE_RECIPIENT))
+                    .request()
+                    .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
+                    .put(Entity.entity(mapper.readValue(jsonFixture("fixtures/current_message_single_device.json"), IncomingMessageList.class),
+                            MediaType.APPLICATION_JSON_TYPE));
+
+    Assertions.assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(404);
+
+    verify(pushSender, never()).sendMessage(any(Account.class), any(Device.class), any(Envelope.class), eq(false), anyString());
   }
 
 }
