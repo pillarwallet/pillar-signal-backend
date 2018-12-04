@@ -65,7 +65,7 @@ public class KeyControllerTest {
                                                             .addProvider(AuthHelper.getAuthFilter())
                                                             .addProvider(new AuthValueFactoryProvider.Binder())
                                                             .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
-                                                            .addResource(new KeysController(rateLimiters, keys, accounts, null))
+                                                            .addResource(new KeysController(rateLimiters, keys, accounts, null, null))
                                                             .build();
 
   @Before

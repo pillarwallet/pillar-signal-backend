@@ -18,6 +18,7 @@ package org.whispersystems.textsecuregcm.controllers;
 
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Optional;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.whispersystems.textsecuregcm.entities.SignedPreKey;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.federation.NoSuchPeerException;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
+import org.whispersystems.textsecuregcm.microservices.CorePlatform;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -45,10 +47,15 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import io.dropwizard.auth.Auth;
 
@@ -61,14 +68,17 @@ public class KeysController {
   private final Keys                   keys;
   private final AccountsManager        accounts;
   private final FederatedClientManager federatedClientManager;
+  private final CorePlatform           corePlatform;
 
   public KeysController(RateLimiters rateLimiters, Keys keys, AccountsManager accounts,
-                        FederatedClientManager federatedClientManager)
+                        FederatedClientManager federatedClientManager,
+                        CorePlatform corePlatform)
   {
     this.rateLimiters           = rateLimiters;
     this.keys                   = keys;
     this.accounts               = accounts;
     this.federatedClientManager = federatedClientManager;
+    this.corePlatform           = corePlatform;
   }
 
   @GET
@@ -114,9 +124,18 @@ public class KeysController {
   public Optional<PreKeyResponse> getDeviceKeys(@Auth                   Account account,
                                                 @PathParam("number")    String number,
                                                 @PathParam("device_id") String deviceId,
-                                                @QueryParam("relay")    Optional<String> relay)
-      throws RateLimitExceededException
+                                                @QueryParam("relay")    Optional<String> relay,
+                                                @QueryParam("userId")   Optional<String> userId,
+                                                @QueryParam("userConnectionAccessToken") Optional<String> userConnectionAccessToken)
+    throws RateLimitExceededException
   {
+    if (!userId.isPresent() || !userConnectionAccessToken.isPresent()) throw new WebApplicationException(Response.status(404).build());
+    Future<String> connectionState = corePlatform.getConnectionState(userId.get(), userConnectionAccessToken.get());
+    try {
+      if (!connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))  throw new WebApplicationException(Response.status(404).build());
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
     try {
       if (relay.isPresent()) {
         return federatedClientManager.getClient(relay.get()).getKeysV2(number, deviceId);
