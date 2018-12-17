@@ -216,7 +216,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     }
 
     AttachmentController attachmentController = new AttachmentController(rateLimiters, federatedClientManager, urlSigner);
-    KeysController       keysController       = new KeysController(rateLimiters, keys, accountsManager, federatedClientManager);
+    KeysController       keysController       = new KeysController(rateLimiters, keys, accountsManager, federatedClientManager, corePlatform);
     MessageController    messageController    = new MessageController(rateLimiters, pushSender, receiptSender, accountsManager, messagesManager, federatedClientManager, mixpanelSender, corePlatform);
     ProfileController    profileController    = new ProfileController(rateLimiters , accountsManager, config.getProfilesConfiguration());
 

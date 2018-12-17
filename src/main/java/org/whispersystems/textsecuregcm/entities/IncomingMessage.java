@@ -52,7 +52,7 @@ public class IncomingMessage {
   private String tag;
 
   @JsonProperty
-  private String connectionAccessToken;
+  private String userConnectionAccessToken;
 
   @JsonProperty
   private String userId;
@@ -94,8 +94,8 @@ public class IncomingMessage {
   }
 
 
-  public String getConnectionAccessToken() {
-    return connectionAccessToken;
+  public String getUserConnectionAccessToken() {
+    return userConnectionAccessToken;
   }
 
   public String getUserId() {
