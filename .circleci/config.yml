@@ -71,7 +71,7 @@ workflows:
           filters:
             branches:
               only:
-                - feature/add-whitesource
+                - develop
       - build:
           filters:
             branches:
