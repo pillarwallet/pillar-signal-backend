@@ -1,0 +1,10 @@
+/home/circleci/platform-investments/
+/home/circleci/platform-investments/src
+/home/circleci/platform-investments/src/config
+/home/circleci/platform-investments/src/lib
+/home/circleci/platform-investments/src/models
+/home/circleci/platform-investments/src/utils
+/home/circleci/platform-investments/src/controllers
+/home/circleci/platform-investments/src/middleware
+/home/circleci/platform-investments/src/routes
+/home/circleci/platform-investments/src/services
