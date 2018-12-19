@@ -33,6 +33,13 @@ import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.basic.BasicCredentials;
 
+import java.io.FileReader;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.Scanner;
+
 public class AccountAuthenticator implements Authenticator<BasicCredentials, Account> {
 
   private final MetricRegistry metricRegistry               = SharedMetricRegistries.getOrCreate(Constants.METRICS_NAME);
@@ -42,15 +49,21 @@ public class AccountAuthenticator implements Authenticator<BasicCredentials, Acc
   private final Logger logger = LoggerFactory.getLogger(AccountAuthenticator.class);
 
   private final AccountsManager accountsManager;
+  private final RSAPublicKey publicKey;
 
   public AccountAuthenticator(AccountsManager accountsManager) {
     this.accountsManager = accountsManager;
+    this.publicKey = null;
+  }
+
+  public AccountAuthenticator(AccountsManager accountsManager, String publicKeyPath) throws Exception {
+    this.accountsManager = accountsManager;
+    this.publicKey = getPublicKey(publicKeyPath);
   }
 
   @Override
   public Optional<Account> authenticate(BasicCredentials basicCredentials)
-      throws AuthenticationException
-  {
+      throws AuthenticationException {
     try {
       AuthorizationHeader authorizationHeader = AuthorizationHeader.fromUserAndPassword(basicCredentials.getUsername(), basicCredentials.getPassword());
       Optional<Account>   account             = accountsManager.get(authorizationHeader.getNumber());
@@ -79,11 +92,54 @@ public class AccountAuthenticator implements Authenticator<BasicCredentials, Acc
     }
   }
 
+  public Optional<Account> authenticate(String bearerToken)
+          throws AuthenticationException
+  {
+      try {
+        AuthorizationHeader authorizationHeader = AuthorizationHeader.fromBearer(bearerToken, publicKey);
+          Optional<Account> account = accountsManager.get(authorizationHeader.getNumber());
+
+          if (!account.isPresent()) {
+            return Optional.absent();
+          }
+
+          Optional<Device> device = account.get().getDevice(1); // not using multiple device support, 1 is default
+
+          if (!device.isPresent()) {
+            return Optional.absent();
+          }
+
+          authenticationSucceededMeter.mark();
+          account.get().setAuthenticatedDevice(device.get());
+          updateLastSeen(account.get(), device.get());
+          return account;
+      } catch (InvalidAuthorizationHeaderException e) {
+          return Optional.absent();
+      }
+
+  }
+
   private void updateLastSeen(Account account, Device device) {
     if (device.getLastSeen() != Util.todayInMillis()) {
       device.setLastSeen(Util.todayInMillis());
       accountsManager.update(account);
     }
+  }
+
+  private RSAPublicKey getPublicKey(String filename) throws Exception {
+    Scanner in = new Scanner(new FileReader(filename));
+    StringBuilder sb = new StringBuilder();
+    while (in.hasNext()) sb.append(in.next());
+    in.close();
+    String publicKeyContent = sb.toString()
+            .replaceAll("\\n", "")
+            .replace(" ", "")
+            .replace("-----BEGINPUBLICKEY-----", "")
+            .replace("-----ENDPUBLICKEY-----", "");
+    KeyFactory kf = KeyFactory.getInstance("RSA");
+    X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
+    RSAPublicKey publicKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+    return publicKey;
   }
 
 }

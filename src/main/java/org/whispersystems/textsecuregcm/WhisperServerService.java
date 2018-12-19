@@ -32,6 +32,7 @@ import org.whispersystems.dropwizard.simpleauth.AuthDynamicFeature;
 import org.whispersystems.dropwizard.simpleauth.AuthValueFactoryProvider;
 import org.whispersystems.dropwizard.simpleauth.BasicCredentialAuthFilter;
 import org.whispersystems.textsecuregcm.auth.AccountAuthenticator;
+import org.whispersystems.textsecuregcm.auth.BearerTokenAuthFilter;
 import org.whispersystems.textsecuregcm.auth.FederatedPeerAuthenticator;
 import org.whispersystems.textsecuregcm.auth.TurnTokenGenerator;
 import org.whispersystems.textsecuregcm.controllers.AccountController;
@@ -189,7 +190,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     APNSender                  apnSender                  = new APNSender(accountsManager, config.getApnConfiguration());
     GCMSender                  gcmSender                  = new GCMSender(accountsManager, googleCredential, config.getFcmConfiguration().getProjectNumber());
     WebsocketSender            websocketSender            = new WebsocketSender(messagesManager, pubSubManager);
-    AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager                 );
+    AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager, config.getJwtConfiguration().getPublicKeyPath());
     FederatedPeerAuthenticator federatedPeerAuthenticator = new FederatedPeerAuthenticator(config.getFederationConfiguration());
     RateLimiters               rateLimiters               = new RateLimiters(config.getLimitsConfiguration(), cacheClient);
 
@@ -218,11 +219,11 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     MessageController    messageController    = new MessageController(rateLimiters, pushSender, receiptSender, accountsManager, messagesManager, federatedClientManager, mixpanelSender);
     ProfileController    profileController    = new ProfileController(rateLimiters , accountsManager, config.getProfilesConfiguration());
 
-    environment.jersey().register(new AuthDynamicFeature(new BasicCredentialAuthFilter.Builder<Account>()
+    environment.jersey().register(new AuthDynamicFeature(new BearerTokenAuthFilter.Builder<Account>()
                                                              .setAuthenticator(deviceAuthenticator)
                                                              .setPrincipal(Account.class)
                                                              .buildAuthFilter(),
-                                                         new BasicCredentialAuthFilter.Builder<FederatedPeer>()
+                                                         new BearerTokenAuthFilter.Builder<FederatedPeer>()
                                                              .setAuthenticator(federatedPeerAuthenticator)
                                                              .setPrincipal(FederatedPeer.class)
                                                              .buildAuthFilter()));
