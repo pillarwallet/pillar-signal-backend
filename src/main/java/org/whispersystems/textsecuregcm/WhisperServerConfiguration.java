@@ -129,6 +129,11 @@ public class WhisperServerConfiguration extends Configuration {
   @JsonProperty
   private ApnConfiguration apn;
 
+  @Valid
+  @NotNull
+  @JsonProperty
+  private MicroServicesConfiguration microServices;
+
   @JsonProperty
   private MixpanelConfiguration mixpanel;
 
@@ -206,6 +211,10 @@ public class WhisperServerConfiguration extends Configuration {
 
   public ProfilesConfiguration getProfilesConfiguration() {
     return profiles;
+  }
+
+  public MicroServicesConfiguration getMicroServicesConfiguration() {
+    return microServices;
   }
 
   public Map<String, Integer> getTestDevices() {
