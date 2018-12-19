@@ -15,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import io.dropwizard.auth.Auth;
 
@@ -37,11 +38,10 @@ public class FederationControllerV2 extends FederationController {
   public Optional<PreKeyResponse> getKeysV2(@Auth                FederatedPeer peer,
                                             @PathParam("number") String number,
                                             @PathParam("device") String device)
-      throws IOException
-  {
+          throws IOException, ExecutionException, InterruptedException {
     try {
       return keysController.getDeviceKeys(new NonLimitedAccount("Unknown", -1, peer.getName()),
-                                          number, device, Optional.<String>absent());
+                                          number, device, Optional.<String>absent(), Optional.<String>absent(), Optional.<String>absent());
     } catch (RateLimitExceededException e) {
       logger.warn("Rate limiting on federated channel", e);
       throw new IOException(e);
