@@ -33,10 +33,8 @@ import org.whispersystems.textsecuregcm.federation.FederatedClient;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.federation.NoSuchPeerException;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
-import org.whispersystems.textsecuregcm.push.NotPushRegisteredException;
-import org.whispersystems.textsecuregcm.push.PushSender;
-import org.whispersystems.textsecuregcm.push.ReceiptSender;
-import org.whispersystems.textsecuregcm.push.TransientPushFailureException;
+import org.whispersystems.textsecuregcm.microservices.CorePlatform;
+import org.whispersystems.textsecuregcm.push.*;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -61,6 +59,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import io.dropwizard.auth.Auth;
 
@@ -78,6 +78,7 @@ public class MessageController {
   private final AccountsManager        accountsManager;
   private final MessagesManager        messagesManager;
   private final MixpanelSender         mixpanelSender;
+  private final CorePlatform           corePlatform;
 
   public MessageController(RateLimiters rateLimiters,
                            PushSender pushSender,
@@ -93,6 +94,7 @@ public class MessageController {
     this.messagesManager        = messagesManager;
     this.federatedClientManager = federatedClientManager;
     this.mixpanelSender         = null;
+    this.corePlatform           = null;
   }
 
   public MessageController(RateLimiters rateLimiters,
@@ -101,7 +103,8 @@ public class MessageController {
                            AccountsManager accountsManager,
                            MessagesManager messagesManager,
                            FederatedClientManager federatedClientManager,
-                           MixpanelSender mixpanelSender)
+                           MixpanelSender mixpanelSender,
+                           CorePlatform corePlatform)
   {
     this.rateLimiters           = rateLimiters;
     this.pushSender             = pushSender;
@@ -110,6 +113,7 @@ public class MessageController {
     this.messagesManager        = messagesManager;
     this.federatedClientManager = federatedClientManager;
     this.mixpanelSender         = mixpanelSender;
+    this.corePlatform           = corePlatform;
   }
 
   @Timed
@@ -215,43 +219,52 @@ public class MessageController {
                                 Device destinationDevice,
                                 long timestamp,
                                 IncomingMessage incomingMessage)
-      throws NoSuchUserException
+    throws NoSuchUserException
   {
+    Future<String> connectionState = corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getUserConnectionAccessToken());
+    String connectionStateString = null;
     try {
-      Optional<byte[]> messageBody    = getMessageBody(incomingMessage);
-      Optional<byte[]> messageContent = getMessageContent(incomingMessage);
-      
-      logger.info("INCOMING MESSAGE= "+incomingMessage);
-      logger.info("MESSAGE BODY= "+messageBody);
-      logger.info("MESSAGE CONTENT= "+messageContent);
-      logger.info("MESSAGE TAG= "+incomingMessage.getTag());
-      Envelope.Builder messageBuilder = Envelope.newBuilder();
+        connectionStateString = connectionState.get();
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+    if (connectionStateString != null && !connectionStateString.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
+        boolean silent = connectionStateString.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
+        try {
+            Optional<byte[]> messageBody    = getMessageBody(incomingMessage);
+            Optional<byte[]> messageContent = getMessageContent(incomingMessage);
 
-      messageBuilder.setType(Envelope.Type.valueOf(incomingMessage.getType()))
+            logger.info("INCOMING MESSAGE"+incomingMessage);
+            Envelope.Builder messageBuilder = Envelope.newBuilder();
+
+            messageBuilder.setType(Envelope.Type.valueOf(incomingMessage.getType()))
                     .setSource(source.getNumber())
                     .setTimestamp(timestamp == 0 ? System.currentTimeMillis() : timestamp)
                     .setSourceDevice((int) source.getAuthenticatedDevice().get().getId());
 
-      if (messageBody.isPresent()) {
-        messageBuilder.setLegacyMessage(ByteString.copyFrom(messageBody.get()));
-      }
+            if (messageBody.isPresent()) {
+              messageBuilder.setLegacyMessage(ByteString.copyFrom(messageBody.get()));
+            }
 
-      if (messageContent.isPresent()) {
-        messageBuilder.setContent(ByteString.copyFrom(messageContent.get()));
-      }
+            if (messageContent.isPresent()) {
+              messageBuilder.setContent(ByteString.copyFrom(messageContent.get()));
+            }
 
-      if (source.getRelay().isPresent()) {
-        messageBuilder.setRelay(source.getRelay().get());
-      }
-      logger.info("              MESSAGE CONTROLLER TRIGGER PUSH SENDER SEND MESSAGE               ");
-      pushSender.sendMessage(destinationAccount, destinationDevice, messageBuilder.build(), incomingMessage.isSilent(), incomingMessage.getTag());
-      // send mixpanel sent message event
-      if (destinationDevice.isMaster() && this.mixpanelSender != null) {
-        this.mixpanelSender.sendSentMessageEvent(source.getNumber());
-      }
-    } catch (NotPushRegisteredException e) {
-      if (destinationDevice.isMaster()) throw new NoSuchUserException(e);
-      else                              logger.debug("Not registered", e);
+            if (source.getRelay().isPresent()) {
+              messageBuilder.setRelay(source.getRelay().get());
+            }
+            logger.info("              MESSAGE CONTROLLER TRIGGER PUSH SENDER SEND MESSAGE               ");
+            pushSender.sendMessage(destinationAccount, destinationDevice, messageBuilder.build(), silent, incomingMessage.getTag());
+            // send mixpanel sent message event
+            if (destinationDevice.isMaster() && mixpanelSender != null) {
+              mixpanelSender.sendSentMessageEvent(source.getNumber());
+            }
+        } catch (NotPushRegisteredException e) {
+            if (destinationDevice.isMaster()) throw new NoSuchUserException(e);
+            else                              logger.debug("Not registered", e);
+        }
+    } else {
+      throw new WebApplicationException(Response.status(404).build());
     }
   }
 

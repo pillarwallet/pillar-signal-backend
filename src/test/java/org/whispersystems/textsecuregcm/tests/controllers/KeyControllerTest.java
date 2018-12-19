@@ -15,6 +15,7 @@ import org.whispersystems.textsecuregcm.entities.PreKeyState;
 import org.whispersystems.textsecuregcm.entities.SignedPreKey;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
+import org.whispersystems.textsecuregcm.microservices.CorePlatform;
 import org.whispersystems.textsecuregcm.storage.Account;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -29,6 +30,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,13 +61,14 @@ public class KeyControllerTest {
 
   private RateLimiters          rateLimiters  = mock(RateLimiters.class);
   private RateLimiter           rateLimiter   = mock(RateLimiter.class );
+  private CorePlatform          corePlatform  = mock(CorePlatform.class);
 
   @Rule
   public final ResourceTestRule resources = ResourceTestRule.builder()
                                                             .addProvider(AuthHelper.getAuthFilter())
                                                             .addProvider(new AuthValueFactoryProvider.Binder())
                                                             .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
-                                                            .addResource(new KeysController(rateLimiters, keys, accounts, null))
+                                                            .addResource(new KeysController(rateLimiters, keys, accounts, null, corePlatform))
                                                             .build();
 
   @Before
@@ -131,6 +134,8 @@ public class KeyControllerTest {
 
     when(AuthHelper.VALID_DEVICE.getSignedPreKey()).thenReturn(new SignedPreKey(89898, "zoofarb", "sigvalid"));
     when(AuthHelper.VALID_ACCOUNT.getIdentityKey()).thenReturn(null);
+
+    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
 
   @Test
@@ -177,6 +182,8 @@ public class KeyControllerTest {
   public void validSingleRequestTestV2() throws Exception {
     PreKeyResponse result = resources.getJerseyTest()
                                      .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
+                                     .queryParam("userId", "user-id")
+                                     .queryParam("userConnectionAccessToken", "user-connection-access-token")
                                      .request()
                                      .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
                                      .get(PreKeyResponse.class);
@@ -195,6 +202,8 @@ public class KeyControllerTest {
   public void validMultiRequestTestV2() throws Exception {
     PreKeyResponse results = resources.getJerseyTest()
                                       .target(String.format("/v2/keys/%s/*", EXISTS_NUMBER))
+                                      .queryParam("userId", "user-id")
+                                      .queryParam("userConnectionAccessToken", "user-connection-access-token")
                                       .request()
                                       .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
                                       .get(PreKeyResponse.class);
@@ -318,5 +327,19 @@ public class KeyControllerTest {
     verify(accounts).update(AuthHelper.VALID_ACCOUNT);
   }
 
+  @Test
+  public void connectionNotExistRequestTestV2() throws Exception {
+    when(corePlatform.getConnectionState(eq("user-id"), anyString())).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
+
+    Response response = resources.getJerseyTest()
+            .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
+            .queryParam("userId", "user-id")
+            .queryParam("userConnectionAccessToken", "not-existing-user-connection-access-token")
+            .request()
+            .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
+            .get();
+
+    assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(404);
+  }
 
 }
