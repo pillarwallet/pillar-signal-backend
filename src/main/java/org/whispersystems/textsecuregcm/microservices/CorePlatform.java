@@ -33,46 +33,48 @@ public class CorePlatform {
 
     public Future<String> getConnectionState(String receiverId, String connectionAccessKey) {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        HttpsURLConnection connection = null;
-        try {
-            URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
-            connection = (HttpsURLConnection) url.openConnection();
-            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-            connection.setRequestProperty("User-Agent", "Signal-Java-Backend");
-            if (connection.getResponseCode() != 200){
-                connection.disconnect();
-                logger.info("CorePlatform failed: " + ERROR_CORE_CONNECTION_FAILED);
-                completableFuture.cancel(false);
-                return completableFuture;
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            StringBuffer jsonResponse = new StringBuffer();
-            String line;
-            while ((line = br.readLine()) != null) {
-                jsonResponse.append(line);
-            }
-            br.close();
-            connection.disconnect();
-            JSONArray response = new JSONArray(jsonResponse.toString());
-            String state = CONNECTION_STATE_BLOCKED;
-            if (response.isNull(0)) throw new IOException();
-            JSONObject connectionData = response.optJSONObject(0);
-            if (!connectionData.isNull("status")){
-                switch (connectionData.getString("status")){
-                    case "muted":
-                        state = CONNECTION_STATE_MUTED;
-                        break;
-                    case "accepted":
-                        state = CONNECTION_STATE_ACCEPTED;
-                        break;
-                }
-            }
-            completableFuture.complete(state);
-        } catch (IOException | JSONException e) {
-            if (connection != null) connection.disconnect();
-            logger.info("CorePlatform failed: " + ERROR_CORE_PLATFORM_FAILED);
-            completableFuture.cancel(false);
-        }
+        completableFuture.complete(CONNECTION_STATE_ACCEPTED);
+        // TODO: uncomment connection state check when app front-end is ready
+//        HttpsURLConnection connection = null;
+//        try {
+//            URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
+//            connection = (HttpsURLConnection) url.openConnection();
+//            connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+//            connection.setRequestProperty("User-Agent", "Signal-Java-Backend");
+//            if (connection.getResponseCode() != 200){
+//                connection.disconnect();
+//                logger.info("CorePlatform failed: " + ERROR_CORE_CONNECTION_FAILED);
+//                completableFuture.cancel(false);
+//                return completableFuture;
+//            }
+//            BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//            StringBuffer jsonResponse = new StringBuffer();
+//            String line;
+//            while ((line = br.readLine()) != null) {
+//                jsonResponse.append(line);
+//            }
+//            br.close();
+//            connection.disconnect();
+//            JSONArray response = new JSONArray(jsonResponse.toString());
+//            String state = CONNECTION_STATE_BLOCKED;
+//            if (response.isNull(0)) throw new IOException();
+//            JSONObject connectionData = response.optJSONObject(0);
+//            if (!connectionData.isNull("status")){
+//                switch (connectionData.getString("status")){
+//                    case "muted":
+//                        state = CONNECTION_STATE_MUTED;
+//                        break;
+//                    case "accepted":
+//                        state = CONNECTION_STATE_ACCEPTED;
+//                        break;
+//                }
+//            }
+//            completableFuture.complete(state);
+//        } catch (IOException | JSONException e) {
+//            if (connection != null) connection.disconnect();
+//            logger.info("CorePlatform failed: " + ERROR_CORE_PLATFORM_FAILED);
+//            completableFuture.cancel(false);
+//        }
         return completableFuture;
     }
 
