@@ -62,6 +62,9 @@ fcm: # FCM Configuration
   apiKey: AAAAvOWie34:APA91bEsQ2G7iHyAjZFmXTvzN6ox_HKz2w6XmPKmUGY4FErvTjbz16KCsEnyV7bGaOYN4yLRVkof8oL9fFv5BAFi3kTsOOgQnuI7KtWpW7Rsl66f8gTEW6NH2Bp1lA-K6DYKBi7HGO48
   jsonPath: config/firebase-auth.json
 
+jwt:
+  publicKeyPath: ../certs/platform_auth_pub2048.pem
+
 server:
   applicationConnectors:
     - type: http
