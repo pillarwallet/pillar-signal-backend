@@ -67,7 +67,8 @@ public class AccountControllerTest {
                                                                                                Optional.of(authorizationKey),
                                                                                                turnTokenGenerator,
                                                                                                new HashMap<String, Integer>(),
-                                                                                               keys))
+                                                                                               keys,
+                                                                                   null))
                                                             .build();
 
 

@@ -17,10 +17,17 @@
 package org.whispersystems.textsecuregcm.auth;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.whispersystems.textsecuregcm.util.Base64;
 import org.whispersystems.textsecuregcm.util.Util;
 
 import java.io.IOException;
+import java.security.interfaces.RSAPublicKey;
 
 public class AuthorizationHeader {
 
@@ -49,7 +56,36 @@ public class AuthorizationHeader {
     }
   }
 
+  public static AuthorizationHeader fromBearer(String bearerToken, RSAPublicKey publicKey) throws InvalidAuthorizationHeaderException {
+    DecodedJWT jwt;
+    try {
+      Algorithm algorithm = Algorithm.RSA256(publicKey, null);
+      JWTVerifier verifier = JWT.require(algorithm).build();
+      jwt = verifier.verify(bearerToken);
+    } catch (JWTVerificationException e){
+      throw new InvalidAuthorizationHeaderException("Failed to verify JWT: " + e.getMessage());
+    }
+
+    if (jwt.getClaim("username").isNull())
+      throw new InvalidAuthorizationHeaderException("No username in the payload");
+
+    String username = jwt.getClaim("username").asString();
+
+    if (username == null || username.isEmpty())
+      throw new InvalidAuthorizationHeaderException("No username in the payload");
+
+    String password = RandomStringUtils.randomAlphanumeric(32);
+    // we're not using any password no more and relying on verified JWT
+    // random password is generated for account register methods
+
+    return new AuthorizationHeader(username, 1, password);
+  }
+
   public static AuthorizationHeader fromFullHeader(String header) throws InvalidAuthorizationHeaderException {
+    return fromFullHeader(header, null);
+  }
+
+  public static AuthorizationHeader fromFullHeader(String header, RSAPublicKey publicKey) throws InvalidAuthorizationHeaderException {
     try {
       if (header == null) {
         throw new InvalidAuthorizationHeaderException("Null header");
@@ -61,8 +97,13 @@ public class AuthorizationHeader {
         throw new InvalidAuthorizationHeaderException("Invalid authorization header: " + header);
       }
 
-      if (!"Basic".equals(headerParts[0])) {
+      if (!"Basic".equals(headerParts[0])
+        && !"Bearer".equals(headerParts[0])) {
         throw new InvalidAuthorizationHeaderException("Unsupported authorization method: " + headerParts[0]);
+      }
+
+      if (publicKey != null && "Bearer".equals(headerParts[0])){
+        return fromBearer(headerParts[1], publicKey);
       }
 
       String concatenatedValues = new String(Base64.decode(headerParts[1]));
