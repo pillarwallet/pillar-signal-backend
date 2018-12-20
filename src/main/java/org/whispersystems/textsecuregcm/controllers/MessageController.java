@@ -221,12 +221,16 @@ public class MessageController {
                                 IncomingMessage incomingMessage)
     throws NoSuchUserException
   {
-    Future<String> connectionState = corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getUserConnectionAccessToken());
-    String connectionStateString = null;
-    try {
+    String userId = incomingMessage.getUserId();
+    String userConnectionAccessToken = incomingMessage.getUserConnectionAccessToken();
+    String connectionStateString = CorePlatform.CONNECTION_STATE_ACCEPTED;
+    if (userId != null && userConnectionAccessToken != null) {
+      Future<String> connectionState = corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getUserConnectionAccessToken());
+      try {
         connectionStateString = connectionState.get();
-    } catch (InterruptedException | ExecutionException e) {
-      e.printStackTrace();
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
     }
     if (connectionStateString != null && !connectionStateString.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
         boolean silent = connectionStateString.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
