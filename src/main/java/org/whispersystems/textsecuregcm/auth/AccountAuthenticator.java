@@ -56,9 +56,10 @@ public class AccountAuthenticator implements Authenticator<BasicCredentials, Acc
     this.publicKey = null;
   }
 
-  public AccountAuthenticator(AccountsManager accountsManager, String publicKeyPath) throws Exception {
+  public AccountAuthenticator(AccountsManager accountsManager, RSAPublicKey publicKey) throws Exception {
     this.accountsManager = accountsManager;
-    this.publicKey = getPublicKey(publicKeyPath);
+    this.publicKey = publicKey;
+    if (this.publicKey == null) logger.warn("JWT Public Key failed to load");
   }
 
   @Override
@@ -124,22 +125,6 @@ public class AccountAuthenticator implements Authenticator<BasicCredentials, Acc
       device.setLastSeen(Util.todayInMillis());
       accountsManager.update(account);
     }
-  }
-
-  private RSAPublicKey getPublicKey(String filename) throws Exception {
-    Scanner in = new Scanner(new FileReader(filename));
-    StringBuilder sb = new StringBuilder();
-    while (in.hasNext()) sb.append(in.next());
-    in.close();
-    String publicKeyContent = sb.toString()
-            .replaceAll("\\n", "")
-            .replace(" ", "")
-            .replace("-----BEGINPUBLICKEY-----", "")
-            .replace("-----ENDPUBLICKEY-----", "");
-    KeyFactory kf = KeyFactory.getInstance("RSA");
-    X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
-    RSAPublicKey publicKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
-    return publicKey;
   }
 
 }

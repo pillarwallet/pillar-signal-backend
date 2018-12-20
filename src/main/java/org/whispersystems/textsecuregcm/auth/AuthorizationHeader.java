@@ -82,6 +82,10 @@ public class AuthorizationHeader {
   }
 
   public static AuthorizationHeader fromFullHeader(String header) throws InvalidAuthorizationHeaderException {
+    return fromFullHeader(header, null);
+  }
+
+  public static AuthorizationHeader fromFullHeader(String header, RSAPublicKey publicKey) throws InvalidAuthorizationHeaderException {
     try {
       if (header == null) {
         throw new InvalidAuthorizationHeaderException("Null header");
@@ -98,8 +102,8 @@ public class AuthorizationHeader {
         throw new InvalidAuthorizationHeaderException("Unsupported authorization method: " + headerParts[0]);
       }
 
-      if ("Bearer".equals(headerParts[0])){
-        return fromBearer(headerParts[1], null);
+      if (publicKey != null && "Bearer".equals(headerParts[0])){
+        return fromBearer(headerParts[1], publicKey);
       }
 
       String concatenatedValues = new String(Base64.decode(headerParts[1]));

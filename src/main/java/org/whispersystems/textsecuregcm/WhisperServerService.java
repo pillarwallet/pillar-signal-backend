@@ -104,10 +104,16 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletRegistration;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.security.KeyFactory;
 import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.EnumSet;
+import java.util.Scanner;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import io.dropwizard.Application;
@@ -179,6 +185,23 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
             .fromStream(new FileInputStream(config.getFcmConfiguration().getJsonPath()))
             .createScoped(Arrays.asList(new String[]{ "https://www.googleapis.com/auth/firebase.messaging" }));
 
+    RSAPublicKey jwtPublicKey = null;
+    Scanner in = new Scanner(new FileReader(config.getJwtConfiguration().getPublicKeyPath()));
+    StringBuilder sb = new StringBuilder();
+    while (in.hasNext()) sb.append(in.next());
+    in.close();
+    String publicKeyContent = sb.toString()
+            .replaceAll("\\n", "")
+            .replace(" ", "")
+            .replace("-----BEGINPUBLICKEY-----", "")
+            .replace("-----ENDPUBLICKEY-----", "");
+
+    if (!publicKeyContent.isEmpty()) {
+      KeyFactory kf = KeyFactory.getInstance("RSA");
+      X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
+      jwtPublicKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+    }
+
     DirectoryManager           directory                  = new DirectoryManager(directoryClient);
     PendingAccountsManager     pendingAccountsManager     = new PendingAccountsManager(pendingAccounts, cacheClient);
     PendingDevicesManager      pendingDevicesManager      = new PendingDevicesManager (pendingDevices, cacheClient );
@@ -191,7 +214,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     APNSender                  apnSender                  = new APNSender(accountsManager, config.getApnConfiguration());
     GCMSender                  gcmSender                  = new GCMSender(accountsManager, googleCredential, config.getFcmConfiguration().getProjectNumber());
     WebsocketSender            websocketSender            = new WebsocketSender(messagesManager, pubSubManager);
-    AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager, config.getJwtConfiguration().getPublicKeyPath());
+    AccountAuthenticator       deviceAuthenticator        = new AccountAuthenticator(accountsManager, jwtPublicKey);
     FederatedPeerAuthenticator federatedPeerAuthenticator = new FederatedPeerAuthenticator(config.getFederationConfiguration());
     RateLimiters               rateLimiters               = new RateLimiters(config.getLimitsConfiguration(), cacheClient);
 
@@ -231,7 +254,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
                                                              .buildAuthFilter()));
     environment.jersey().register(new AuthValueFactoryProvider.Binder());
 
-    environment.jersey().register(new AccountController(pendingAccountsManager, accountsManager, rateLimiters, smsSender, messagesManager, new TimeProvider(), authorizationKey, turnTokenGenerator, config.getTestDevices(), keys));
+    environment.jersey().register(new AccountController(pendingAccountsManager, accountsManager, rateLimiters, smsSender, messagesManager, new TimeProvider(), authorizationKey, turnTokenGenerator, config.getTestDevices(), keys, jwtPublicKey));
     environment.jersey().register(new DeviceController(pendingDevicesManager, accountsManager, messagesManager, rateLimiters, config.getMaxDevices()));
     environment.jersey().register(new DirectoryController(rateLimiters, directory));
     environment.jersey().register(new FederationControllerV1(accountsManager, attachmentController, messageController));
