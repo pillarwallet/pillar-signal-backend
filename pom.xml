@@ -101,7 +101,8 @@
         </dependency>
         <dependency>
             <groupId>org.whispersystems</groupId>
-            <artifactId>dropwizard-si
+            <artifactId>dropwizard-simpleauth</artifactId>
+            <version>0.2.0</version>
         </dependency>
 
         <dependency>
