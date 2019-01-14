@@ -95,14 +95,13 @@
             <version>9.4-1201-jdbc41</version>
         </dependency>
         <dependency>
-            <groupId>org.whispersystems</groupId>
+            <groupId>com.github.pillarwallet</groupId>
             <artifactId>websocket-resources</artifactId>
-            <version>0.5.3</version>
+            <version>v0.5.3-1</version>
         </dependency>
         <dependency>
             <groupId>org.whispersystems</groupId>
-            <artifactId>dropwizard-simpleauth</artifactId>
-            <version>0.2.0</version>
+            <artifactId>dropwizard-si
         </dependency>
 
         <dependency>
