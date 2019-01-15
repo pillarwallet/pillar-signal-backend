@@ -119,7 +119,7 @@
             <!--<groupId>org.whispersystems</groupId>-->
             <!--<artifactId>gcm-sender-async</artifactId>-->
             <!--<version>0.1.4</version>-->
-            <groupId>com.github.poocart</groupId>
+            <groupId>com.github.pillarwallet</groupId>
             <artifactId>gcm-sender-async</artifactId>
             <version>a138aebdad</version>
         </dependency>
