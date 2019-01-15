@@ -115,6 +115,7 @@ public class AccountAuthenticator implements Authenticator<BasicCredentials, Acc
           updateLastSeen(account.get(), device.get());
           return account;
       } catch (InvalidAuthorizationHeaderException e) {
+          logger.error("InvalidAuthorizationHeaderException: " + e.getMessage());
           return Optional.absent();
       }
 
