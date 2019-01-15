@@ -23,6 +23,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.whispersystems.textsecuregcm.util.Base64;
 import org.whispersystems.textsecuregcm.util.Util;
 
@@ -34,6 +36,7 @@ public class AuthorizationHeader {
   private final String number;
   private final long   accountId;
   private final String password;
+  private static final Logger logger = LoggerFactory.getLogger(AuthorizationHeader.class);
 
   private AuthorizationHeader(String number, long accountId, String password) {
     this.number    = number;
@@ -63,7 +66,7 @@ public class AuthorizationHeader {
       JWTVerifier verifier = JWT.require(algorithm).build();
       jwt = verifier.verify(bearerToken);
     } catch (JWTVerificationException e){
-      throw new InvalidAuthorizationHeaderException("Failed to verify JWT: " + e.getMessage());
+      throw new InvalidAuthorizationHeaderException("Failed to verify JWT, " + e.getMessage());
     }
 
     if (jwt.getClaim("username").isNull())
@@ -120,6 +123,7 @@ public class AuthorizationHeader {
 
       return fromUserAndPassword(credentialParts[0], credentialParts[1]);
     } catch (IOException ioe) {
+      logger.error("InvalidAuthorizationHeaderException: " + ioe.getMessage());
       throw new InvalidAuthorizationHeaderException(ioe);
     }
   }
