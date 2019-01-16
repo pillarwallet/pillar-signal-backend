@@ -123,7 +123,7 @@ public class PushSender implements Managed {
   private void sendSynchronousMessage(Account account, Device device, Envelope message, boolean silent, String messageTag) {
     if      (device.getGcmId() != null)   sendGcmMessage(account, device, message, messageTag, silent);
     else if (device.getApnId() != null)   sendApnMessage(account, device, message, silent);
-    else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message);
+    else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message, messageTag);
     else                                  throw new AssertionError();
   }
 
@@ -197,9 +197,9 @@ public class PushSender implements Managed {
     }
   }
 
-  private void sendWebSocketMessage(Account account, Device device, Envelope outgoingMessage)
+  private void sendWebSocketMessage(Account account, Device device, Envelope outgoingMessage, String messageTag)
   {
-    webSocketSender.sendMessage(account, device, outgoingMessage, WebsocketSender.Type.WEB);
+    webSocketSender.sendMessage(account, device, outgoingMessage, WebsocketSender.Type.WEB, messageTag);
   }
 
   @Override
