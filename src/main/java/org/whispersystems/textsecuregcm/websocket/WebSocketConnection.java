@@ -33,7 +33,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.whispersystems.textsecuregcm.entities.MessageProtos.Envelope;
@@ -82,7 +84,8 @@ public class WebSocketConnection implements DispatchChannel {
           processStoredMessages();
           break;
         case PubSubMessage.Type.DELIVER_VALUE:
-          sendMessage(Envelope.parseFrom(pubSubMessage.getContent()), Optional.<Long>absent(), false);
+          String messageTag = pubSubMessage.hasMessageTag() ? pubSubMessage.getMessageTag().toStringUtf8() : "";
+          sendMessage(Envelope.parseFrom(pubSubMessage.getContent()), Optional.<Long>absent(), false, messageTag);
           break;
         case PubSubMessage.Type.CONNECTED_VALUE:
           if (pubSubMessage.hasContent() && !new String(pubSubMessage.getContent().toByteArray()).equals(connectionId)) {
@@ -108,12 +111,15 @@ public class WebSocketConnection implements DispatchChannel {
 
   private void sendMessage(final Envelope       message,
                            final Optional<Long> storedMessageId,
-                           final boolean        requery)
+                           final boolean        requery,
+                           String               messageTag)
   {
     try {
+      List<String> headers = new ArrayList<>();
+      if (messageTag != null && !messageTag.isEmpty()) headers.add("message-tag:"+messageTag);
       EncryptedOutgoingMessage                   encryptedMessage = new EncryptedOutgoingMessage(message, device.getSignalingKey());
       Optional<byte[]>                           body             = Optional.fromNullable(encryptedMessage.toByteArray());
-      ListenableFuture<WebSocketResponseMessage> response         = client.sendRequest("PUT", "/api/v1/message", null, body);
+      ListenableFuture<WebSocketResponseMessage> response         = client.sendRequest("PUT", "/api/v1/message", headers, body);
 
       Futures.addCallback(response, new FutureCallback<WebSocketResponseMessage>() {
         @Override
@@ -145,6 +151,13 @@ public class WebSocketConnection implements DispatchChannel {
     } catch (CryptoEncodingException e) {
       logger.warn("Bad signaling key", e);
     }
+  }
+
+  private void sendMessage(final Envelope       message,
+                           final Optional<Long> storedMessageId,
+                           final boolean        requery)
+  {
+    sendMessage(message, storedMessageId, requery, null);
   }
 
   private void requeueMessage(Envelope message) {
@@ -196,7 +209,7 @@ public class WebSocketConnection implements DispatchChannel {
         builder.setRelay(message.getRelay());
       }
 
-      sendMessage(builder.build(), Optional.of(message.getId()), !iterator.hasNext() && messages.hasMore());
+      sendMessage(builder.build(), Optional.of(message.getId()), !iterator.hasNext() && messages.hasMore(), message.getTag());
     }
 
     if (!messages.hasMore()) {
