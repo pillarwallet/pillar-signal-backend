@@ -72,7 +72,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>2.6.1</version>
+            <version>3.6.1</version>
         </dependency>
 
         <dependency>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>com.github.pillarwallet</groupId>
             <artifactId>websocket-resources</artifactId>
-            <version>v0.5.3-1</version>
+            <version>v0.3.2c</version>
         </dependency>
         <dependency>
             <groupId>org.whispersystems</groupId>

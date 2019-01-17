@@ -73,10 +73,14 @@ public class WebsocketSender {
 
   public DeliveryStatus sendMessage(Account account, Device device, Envelope message, Type channel, String messageTag) {
     WebsocketAddress address       = new WebsocketAddress(account.getNumber(), device.getId());
-    PubSubMessage    pubSubMessage = PubSubMessage.newBuilder()
+
+    PubSubMessage.Builder    pubSubMessageBuilder = PubSubMessage.newBuilder()
                                                   .setType(PubSubMessage.Type.DELIVER)
-                                                  .setContent(message.toByteString())
-                                                  .build();
+                                                  .setContent(message.toByteString());
+
+    if (messageTag != null && !messageTag.isEmpty()) pubSubMessageBuilder.setMessageTag(ByteString.copyFrom(messageTag.getBytes()));
+
+    PubSubMessage pubSubMessage = pubSubMessageBuilder.build();
 
     if (pubSubManager.publish(address, pubSubMessage)) {
       if      (channel == Type.APN) apnOnlineMeter.mark();
