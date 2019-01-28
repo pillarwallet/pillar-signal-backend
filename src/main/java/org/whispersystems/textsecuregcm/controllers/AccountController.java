@@ -71,6 +71,7 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.SecureRandom;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -97,6 +98,7 @@ public class AccountController {
   private final TurnTokenGenerator                    turnTokenGenerator;
   private final Map<String, Integer>                  testDevices;
   private final Keys                                  keys;
+  private final RSAPublicKey                          jwtPublicKey;
 
   private static final long TIMESTAMP_EXPIRY = 180;
 
@@ -109,7 +111,8 @@ public class AccountController {
                            Optional<byte[]> authorizationKey,
                            TurnTokenGenerator turnTokenGenerator,
                            Map<String, Integer> testDevices,
-                           Keys keys)
+                           Keys keys,
+                           RSAPublicKey jwtPublicKey)
   {
     this.pendingAccounts    = pendingAccounts;
     this.accounts           = accounts;
@@ -120,6 +123,8 @@ public class AccountController {
     this.testDevices        = testDevices;
     this.turnTokenGenerator = turnTokenGenerator;
     this.keys = keys;
+    this.jwtPublicKey = jwtPublicKey;
+    if (this.jwtPublicKey == null) logger.warn("JWT Public Key failed to load");
 
     if (authorizationKey.isPresent()) {
       tokenGenerator = Optional.of(new AuthorizationTokenGenerator(authorizationKey.get()));
@@ -245,7 +250,7 @@ public class AccountController {
              JsonProcessingException
   {
     try {
-      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader, jwtPublicKey);
       String number              = header.getNumber();
       String password            = header.getPassword();
 
@@ -277,7 +282,7 @@ public class AccountController {
       throws RateLimitExceededException
   {
     try {
-      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+      AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader, jwtPublicKey);
       String number              = header.getNumber();
       String password            = header.getPassword();
 
@@ -311,7 +316,7 @@ public class AccountController {
       throws RateLimitExceededException
   {
     try {
-      AuthorizationHeader header   = AuthorizationHeader.fromFullHeader(authorizationHeader);
+      AuthorizationHeader header   = AuthorizationHeader.fromFullHeader(authorizationHeader, jwtPublicKey);
       String              number   = header.getNumber();
       String              password = header.getPassword();
 
@@ -386,7 +391,7 @@ public class AccountController {
     }
 
     try {
-        AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
+        AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader, jwtPublicKey);
         String number = header.getNumber();
         String password = header.getPassword();
         Long deviceId = header.getDeviceId();

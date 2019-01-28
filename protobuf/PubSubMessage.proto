@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+syntax = "proto2";
 package textsecure;
 
 option java_package = "org.whispersystems.textsecuregcm.storage";
@@ -29,6 +31,7 @@ message PubSubMessage {
     CONNECTED = 5;
   }
 
-  optional Type  type    = 1;
-  optional bytes content = 2;
+  optional Type  type       = 1;
+  optional bytes content    = 2;
+  optional bytes messageTag = 3;
 }

@@ -129,12 +129,16 @@ public class KeysController {
                                                 @QueryParam("userConnectionAccessToken") Optional<String> userConnectionAccessToken)
     throws RateLimitExceededException
   {
-    if (!userId.isPresent() || !userConnectionAccessToken.isPresent()) throw new WebApplicationException(Response.status(404).build());
-    Future<String> connectionState = corePlatform.getConnectionState(userId.get(), userConnectionAccessToken.get());
-    try {
-      if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED)) throw new WebApplicationException(Response.status(404).build());
-    } catch (InterruptedException | ExecutionException e) {
-      e.printStackTrace();
+    // TODO: uncomment once implemented in app front-end
+//    if (!userId.isPresent() || !userConnectionAccessToken.isPresent()) throw new WebApplicationException(Response.status(404).build());
+    if (userId.isPresent() && userConnectionAccessToken.isPresent()) {
+      Future<String> connectionState = corePlatform.getConnectionState(userId.get(), userConnectionAccessToken.get());
+      try {
+        if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))
+          throw new WebApplicationException(Response.status(404).build());
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      }
     }
     try {
       if (relay.isPresent()) {

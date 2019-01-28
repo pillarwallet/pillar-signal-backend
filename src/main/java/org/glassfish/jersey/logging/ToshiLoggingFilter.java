@@ -2,6 +2,7 @@ package org.glassfish.jersey.logging;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.FeatureContext;
 
 import javax.annotation.Priority;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.glassfish.jersey.logging.LoggingFeature.Verbosity;
 import org.glassfish.jersey.message.MessageUtils;
@@ -69,7 +71,21 @@ public class ToshiLoggingFilter extends LoggingInterceptor implements ContainerR
                 final StringBuilder b = new StringBuilder();
 
                 printRequestLine(b, "Server responding to request with error", id, requestContext.getMethod(), requestContext.getUriInfo().getRequestUri());
-                printPrefixedHeaders(b, id, REQUEST_PREFIX, requestContext.getHeaders());
+
+                MultivaluedMap<String, String> headers = requestContext.getHeaders();
+                String authorizationHeader = null;
+                if (headers != null) authorizationHeader = headers.getFirst("Authorization");
+                if (authorizationHeader != null && !authorizationHeader.isEmpty()) {
+                    String[] headerParts = authorizationHeader.split(" ");
+                    if ("Basic".equals(headerParts[0])) {
+                        headers.remove("Authorization");
+                        String decodedBasicAuth = new String(org.whispersystems.textsecuregcm.util.Base64.decode(headerParts[1]));
+                        String[] credentialParts = decodedBasicAuth.split(":");
+                        headers.add("Authorization (modified: plain username only)", credentialParts[0]);
+                    }
+                }
+
+                printPrefixedHeaders(b, id, REQUEST_PREFIX, headers);
 
                 if (requestContext.hasEntity() && printEntity(verbosity, requestContext.getMediaType())) {
                     logInboundEntity(b, requestContext.getEntityStream(), MessageUtils.getCharset(requestContext.getMediaType()));

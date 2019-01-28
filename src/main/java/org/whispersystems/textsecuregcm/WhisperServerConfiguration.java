@@ -127,6 +127,11 @@ public class WhisperServerConfiguration extends Configuration {
   @Valid
   @NotNull
   @JsonProperty
+  private JwtConfiguration jwt;
+
+  @Valid
+  @NotNull
+  @JsonProperty
   private ApnConfiguration apn;
 
   @Valid
@@ -195,6 +200,10 @@ public class WhisperServerConfiguration extends Configuration {
 
   public GcmConfiguration getGcmConfiguration() {
     return gcm;
+  }
+
+  public JwtConfiguration getJwtConfiguration() {
+    return jwt;
   }
 
   public FcmConfiguration getFcmConfiguration() {
