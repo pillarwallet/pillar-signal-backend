@@ -161,7 +161,7 @@ public class WebSocketConnection implements DispatchChannel {
   }
 
   private void requeueMessage(Envelope message, String messageTag) {
-    int     queueDepth = pushSender.getWebSocketSender().queueMessage(account, device, message);
+    int     queueDepth = pushSender.getWebSocketSender().queueMessage(account, device, message, messageTag);
     boolean fallback   = !message.getSource().equals(account.getNumber()) && message.getType() != Envelope.Type.RECEIPT;
 
     if (messageTag != null && messageTag.equals("tx-note")) return;
