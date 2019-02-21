@@ -510,7 +510,10 @@ public class AccountController {
       newUserMeter.mark();
     }
 
-    messagesManager.clear(number);
+//    messagesManager.clear(number);
+//    Message clear is commented to receive previously pending messages after wallet re-import or signal soft reset
+
+
     pendingAccounts.remove(number);
   }
 
