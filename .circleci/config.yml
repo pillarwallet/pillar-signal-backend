@@ -57,88 +57,14 @@ jobs:
             echo "$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz" > pillar-signal-backend.txt
             export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
             export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
-<<<<<<< HEAD
             /root/.local/bin/aws s3 cp pillar-signal-backend.txt $QA_RELEASE_BUCKET
-=======
-            /root/.local/bin/aws s3 cp pillar-signal-backend.txt $DEVELOPMENT_RELEASE_BUCKET
-      - run:
-          name: Announce Deployment
-          command: |
-            chmod +x .circleci/announceDeployment.sh
-            .circleci/announceDeployment.sh "SIGNAL-BACKEND" "Development" "$(cat ./pillar-signal-backend.txt)"
-
-  build-push-staging:
-
-    working_directory: ~/pillar-signal-backend # directory where steps will run
-
-    docker: # run the steps with Docker
-      - image: maven:3.5.4-jdk-8-alpine
-
-    environment:
-      SIGNAL_VERSION: 1.66
-
-    steps:
-
-      - checkout # check out source code to working directory
-
-      - run:
-          name: Authenticate with FCM
-          command: |
-            touch config/firebase-auth.json
-            echo "$FIREBASE_AUTH_JSON_BASE64_ENCODED" | base64 -d > config/firebase-auth.json
-
-      - restore_cache: # restore the saved cache after the first run or if `pom.xml` has changed
-          key: signal-backend-{{ checksum "pom.xml" }}
-
-      - run: mvn dependency:go-offline # gets the project dependencies
-
-      - save_cache: # saves the project dependencies
-          paths:
-            - ~/.m2
-          key: signal-backend-{{ checksum "pom.xml" }}
-
-      - run: mvn package # run the actual tests
-
-      - store_test_results: # uploads the test metadata from the `target/surefire-reports` directory so that it can show up in the CircleCI dashboard.
-          path: target/surefire-reports
-
-      - store_artifacts: # store the jar as an artifact
-          path: target/TextSecureServer-1.66-bin.tar.gz
-
-      - run:
-          name: install curl
-          command: apk update && apk add bash python python-dev py-pip -y sudo
-      - run:
-          name: Install AWS CLI
-          command: |
-            pip install awscli --upgrade --user
-      - run:
-          name: Publish Artifact and Notification
-          command: |
-            export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-staging-$CIRCLE_BUILD_NUM.tar.gz"
-            curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND-STAGING" "$publishedArtifact"
-      - run:
-          name: Push txt file to S3 bucket
-          command: |
-            touch pillar-signal-backend.txt
-            echo "$SIGNAL_ARTIFACTORY_URL/signal-backend-staging-$CIRCLE_BUILD_NUM.tar.gz" > pillar-signal-backend.txt
-            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
->>>>>>> Added a staging job in circleci config
             /root/.local/bin/aws s3 cp pillar-signal-backend.txt $STAGING_RELEASE_BUCKET
       - run:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
-<<<<<<< HEAD
             .circleci/announceDeployment.sh "SIGNAL-BACKEND" "QA" "$(cat ./pillar-signal-backend.txt)"
   build-production:
-=======
-            .circleci/announceDeployment.sh "SIGNAL-BACKEND" "Staging" "$(cat ./pillar-signal-backend.txt)"
-
-  build-prod:
->>>>>>> Added a staging job in circleci config
 
     working_directory: ~/pillar-signal-backend # directory where steps will run
 
@@ -186,26 +112,12 @@ workflows:
   version: 2
   build_and_deploy_to_artifactory:
     jobs:
-<<<<<<< HEAD
       - build-and-push-s3-qa:
           filters:
             branches:
               only:
                 - develop
       - build-production:
-=======
-      - build-push-dev:
-          filters:
-            branches:
-              only:
-                - develop
-      - build-push-staging:
-          filters:
-            branches:
-              only:
-                - master
-      - build-prod:
->>>>>>> Added a staging job in circleci config
           filters:
             branches:
               only:
