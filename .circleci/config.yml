@@ -135,7 +135,7 @@ workflows:
           filters:
             branches:
               only:
-                - fix/circleci-deploy-job
+                - develop
       - build-production:
           filters:
             branches:
