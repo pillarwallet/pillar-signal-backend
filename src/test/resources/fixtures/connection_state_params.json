@@ -1,0 +1,6 @@
+{
+    "userId": "user-id",
+    "targetUserId": "target-user-id",
+    "sourceIdentityKey": "source-identity-key",
+    "targetIdentityKey": "target-identity-key"
+}

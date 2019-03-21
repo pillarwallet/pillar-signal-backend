@@ -31,11 +31,11 @@ public class CorePlatform {
         this.corePlatformUrl = url;
     }
 
-    public Future<String> getConnectionState(String receiverId, String connectionAccessKey) {
+    public Future<String> getConnectionState(String userId, String targetUserId, String sourceIdentityKey, String targetIdentityKey) {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         HttpsURLConnection connection = null;
         try {
-            URL url = new URL(String.format("%s/connection?userId=%s&accessKey=%s", corePlatformUrl, receiverId, connectionAccessKey));
+            URL url = new URL(String.format("%s/connection/v2?userId=%s&targetUserId=%s&sourceIdentityKey=%s&targetIdentityKey=%s", corePlatformUrl, userId, targetUserId, sourceIdentityKey, targetIdentityKey));
             connection = (HttpsURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             connection.setRequestProperty("User-Agent", "Signal-Java-Backend");
@@ -53,12 +53,12 @@ public class CorePlatform {
             }
             br.close();
             connection.disconnect();
-            JSONArray response = new JSONArray(jsonResponse.toString());
+            JSONObject response = new JSONObject(jsonResponse.toString());
             String state = CONNECTION_STATE_BLOCKED;
-            if (response.isNull(0)) throw new IOException();
-            JSONObject connectionData = response.optJSONObject(0);
-            if (!connectionData.isNull("status")){
-                switch (connectionData.getString("status")){
+            if (response.optJSONObject("targetConnection") == null) throw new IOException();
+            JSONObject targetConnection = response.optJSONObject("targetConnection");
+            if (!targetConnection.isNull("status")){
+                switch (targetConnection.getString("status")){
                     case "muted":
                         state = CONNECTION_STATE_MUTED;
                         break;

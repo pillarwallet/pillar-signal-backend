@@ -95,7 +95,12 @@ public class MessageControllerTest {
 
     when(rateLimiters.getMessagesLimiter()).thenReturn(rateLimiter);
 
-    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
+    when(corePlatform.getConnectionState(
+      eq("user-id"),
+      eq("target-user-id"),
+      eq("source-identity-key"),
+      eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
   
   @Test
@@ -291,7 +296,12 @@ public class MessageControllerTest {
 
   @Test
   public void testConnectionMutedMessage() throws Exception {
-    when(corePlatform.getConnectionState(eq("muted-user-id"), eq("muted-user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
+    when(corePlatform.getConnectionState(
+      eq("user-id"),
+      eq("muted-target-user-id"),
+      eq("source-identity-key"),
+      eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
 
     Response response =
             resources.getJerseyTest()
@@ -309,7 +319,12 @@ public class MessageControllerTest {
 
   @Test
   public void testConnectionBlockedMessage() throws Exception {
-    when(corePlatform.getConnectionState(eq("blocked-user-id"), eq("blocked-user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
+    when(corePlatform.getConnectionState(
+      eq("user-id"),
+      eq("blocked-target-user-id"),
+      eq("source-identity-key"),
+      eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
 
     Response response =
             resources.getJerseyTest()
