@@ -5,8 +5,10 @@
         "body" : "Zm9vYmFyego",
         "timestamp" : 1234,
         "tag" : "tag",
-        "userId" : "user-id",
-        "userConnectionAccessToken" : "user-connection-access-token"
+        "userId": "user-id",
+        "targetUserId": "target-user-id",
+        "sourceIdentityKey": "source-identity-key",
+        "targetIdentityKey": "target-identity-key"
     },
     {
         "type" : 1,
@@ -14,7 +16,9 @@
         "body" : "Zm9vYmFyego",
         "timestamp" : 1234,
         "tag" : "tag",
-        "userId" : "user-id",
-        "userConnectionAccessToken" : "user-connection-access-token"
+        "userId": "user-id",
+        "targetUserId": "target-user-id",
+        "sourceIdentityKey": "source-identity-key",
+        "targetIdentityKey": "target-identity-key"
     }]
 }

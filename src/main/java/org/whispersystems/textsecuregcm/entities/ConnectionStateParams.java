@@ -17,42 +17,9 @@
 package org.whispersystems.textsecuregcm.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import com.google.common.annotations.VisibleForTesting;
 
-public class IncomingMessage {
-
-  @JsonProperty
-  private int    type;
-
-  @JsonProperty
-  private String destination;
-
-  @JsonProperty
-  private long   destinationDeviceId = 1;
-
-  @JsonProperty
-  private int destinationRegistrationId;
-
-  @JsonProperty
-  private String body;
-
-  @JsonProperty
-  private String content;
-
-  @JsonProperty
-  private String relay;
-
-  @JsonProperty
-  private long   timestamp; // deprecated
-
-  @JsonProperty
-  private boolean silent = false;
-
-  @JsonProperty
-  private String tag;
-
-  @JsonProperty
-  private String userConnectionAccessToken;
+public class ConnectionStateParams {
 
   @JsonProperty
   private String userId;
@@ -66,41 +33,16 @@ public class IncomingMessage {
   @JsonProperty
   private String targetIdentityKey;
 
-  public String getDestination() {
-    return destination;
+  public ConnectionStateParams() {}
+
+  @VisibleForTesting
+  public ConnectionStateParams(String userId, String targetUserId, String sourceIdentityKey, String targetIdentityKey) {
+    this.userId = userId;
+    this.targetUserId = targetUserId;
+    this.sourceIdentityKey = sourceIdentityKey;
+    this.targetIdentityKey = targetIdentityKey;
   }
 
-  public String getBody() {
-    return body;
-  }
-
-  public int getType() {
-    return type;
-  }
-
-  public String getRelay() {
-    return relay;
-  }
-
-  public long getDestinationDeviceId() {
-    return destinationDeviceId;
-  }
-
-  public int getDestinationRegistrationId() {
-    return destinationRegistrationId;
-  }
-
-  public String getContent() {
-    return content;
-  }
-
-  public boolean isSilent() {
-    return silent;
-  }
-
-  public String getTag() {
-    return tag == null || tag.isEmpty() ? "chat" : tag;
-  }
 
   public String getUserId() {
     return userId;

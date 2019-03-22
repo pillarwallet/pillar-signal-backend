@@ -5,7 +5,9 @@
         "body" : "Zm9vYmFyego",
         "timestamp" : 1234,
         "tag" : "tag",
-        "userId" : "blocked-user-id",
-        "userConnectionAccessToken" : "blocked-user-connection-access-token"
+        "userId": "user-id",
+        "targetUserId": "blocked-target-user-id",
+        "sourceIdentityKey": "source-identity-key",
+        "targetIdentityKey": "target-identity-key"
     }]
 }

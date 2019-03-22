@@ -4,6 +4,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.whispersystems.textsecuregcm.entities.ConnectionStateParams;
 import org.whispersystems.textsecuregcm.entities.PreKeyResponse;
 import org.whispersystems.textsecuregcm.federation.FederatedPeer;
 import org.whispersystems.textsecuregcm.federation.NonLimitedAccount;
@@ -40,8 +41,9 @@ public class FederationControllerV2 extends FederationController {
                                             @PathParam("device") String device)
           throws IOException, ExecutionException, InterruptedException {
     try {
+      ConnectionStateParams connectionStateParams = new ConnectionStateParams();
       return keysController.getDeviceKeys(new NonLimitedAccount("Unknown", -1, peer.getName()),
-                                          number, device, Optional.<String>absent(), Optional.<String>absent(), Optional.<String>absent());
+                                          number, device, Optional.<String>absent(), connectionStateParams);
     } catch (RateLimitExceededException e) {
       logger.warn("Rate limiting on federated channel", e);
       throw new IOException(e);

@@ -22,12 +22,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.whispersystems.textsecuregcm.entities.PreKeyCount;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponseItem;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponse;
-import org.whispersystems.textsecuregcm.entities.PreKeyState;
-import org.whispersystems.textsecuregcm.entities.PreKey;
-import org.whispersystems.textsecuregcm.entities.SignedPreKey;
+import org.whispersystems.textsecuregcm.entities.*;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.federation.NoSuchPeerException;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
@@ -39,14 +34,7 @@ import org.whispersystems.textsecuregcm.storage.KeyRecord;
 import org.whispersystems.textsecuregcm.storage.Keys;
 
 import javax.validation.Valid;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.MediaType;
@@ -124,21 +112,73 @@ public class KeysController {
   public Optional<PreKeyResponse> getDeviceKeys(@Auth                   Account account,
                                                 @PathParam("number")    String number,
                                                 @PathParam("device_id") String deviceId,
-                                                @QueryParam("relay")    Optional<String> relay,
-                                                @QueryParam("userId")   Optional<String> userId,
-                                                @QueryParam("userConnectionAccessToken") Optional<String> userConnectionAccessToken)
+                                                @QueryParam("relay")    Optional<String> relay)
     throws RateLimitExceededException
   {
-    // TODO: uncomment once implemented in app front-end
-//    if (!userId.isPresent() || !userConnectionAccessToken.isPresent()) throw new WebApplicationException(Response.status(404).build());
-    if (userId.isPresent() && userConnectionAccessToken.isPresent()) {
-      Future<String> connectionState = corePlatform.getConnectionState(userId.get(), userConnectionAccessToken.get());
-      try {
-        if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))
-          throw new WebApplicationException(Response.status(404).build());
-      } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+    // TODO: remove this `GET getDeviceKeys` method once wallets fully migrated to new connections structure
+    try {
+      if (relay.isPresent()) {
+        return federatedClientManager.getClient(relay.get()).getKeysV2(number, deviceId);
       }
+
+      Account target = getAccount(number, deviceId);
+
+      if (account.isRateLimited()) {
+        rateLimiters.getPreKeysLimiter().validate(account.getNumber() +  "__" + number + "." + deviceId);
+      }
+
+      Optional<List<KeyRecord>> targetKeys = getLocalKeys(target, deviceId);
+      List<PreKeyResponseItem>  devices    = new LinkedList<>();
+
+      for (Device device : target.getDevices()) {
+        if (device.isActive() && (deviceId.equals("*") || device.getId() == Long.parseLong(deviceId))) {
+          SignedPreKey signedPreKey = device.getSignedPreKey();
+          PreKey preKey       = null;
+
+          if (targetKeys.isPresent()) {
+            for (KeyRecord keyRecord : targetKeys.get()) {
+              if (!keyRecord.isLastResort() && keyRecord.getDeviceId() == device.getId()) {
+                preKey = new PreKey(keyRecord.getKeyId(), keyRecord.getPublicKey());
+              }
+            }
+          }
+
+          if (signedPreKey != null || preKey != null) {
+            devices.add(new PreKeyResponseItem(device.getId(), device.getRegistrationId(), signedPreKey, preKey));
+          }
+        }
+      }
+
+      if (devices.isEmpty()) return Optional.absent();
+      else                   return Optional.of(new PreKeyResponse(target.getIdentityKey(), devices));
+    } catch (NoSuchPeerException | NoSuchUserException e) {
+      throw new WebApplicationException(Response.status(404).build());
+    }
+  }
+
+  @Timed
+  @PUT
+  @Path("/{number}/{device_id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Optional<PreKeyResponse> getDeviceKeys(@Auth                   Account account,
+                                                @PathParam("number")    String number,
+                                                @PathParam("device_id") String deviceId,
+                                                @QueryParam("relay")    Optional<String> relay,
+                                                @Valid                  ConnectionStateParams connectionStateParams)
+    throws RateLimitExceededException
+  {
+    Future<String> connectionState = corePlatform.getConnectionState(
+      connectionStateParams.getUserId(),
+      connectionStateParams.getTargetUserId(),
+      connectionStateParams.getSourceIdentityKey(),
+      connectionStateParams.getTargetIdentityKey()
+    );
+    try {
+      if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))
+        throw new WebApplicationException(Response.status(404).build());
+    } catch (InterruptedException | ExecutionException e) {
+      e.printStackTrace();
     }
     try {
       if (relay.isPresent()) {

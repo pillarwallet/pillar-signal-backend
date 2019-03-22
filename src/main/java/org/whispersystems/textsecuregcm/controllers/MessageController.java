@@ -222,10 +222,17 @@ public class MessageController {
     throws NoSuchUserException
   {
     String userId = incomingMessage.getUserId();
-    String userConnectionAccessToken = incomingMessage.getUserConnectionAccessToken();
+    String targetUserId = incomingMessage.getTargetUserId();
+    String sourceIdentityKey = incomingMessage.getSourceIdentityKey();
+    String targetIdentityKey = incomingMessage.getTargetIdentityKey();
     String connectionStateString = CorePlatform.CONNECTION_STATE_ACCEPTED;
-    if (userId != null && userConnectionAccessToken != null) {
-      Future<String> connectionState = corePlatform.getConnectionState(incomingMessage.getUserId(), incomingMessage.getUserConnectionAccessToken());
+    if (userId != null && targetUserId != null && sourceIdentityKey != null && targetIdentityKey != null) {
+      Future<String> connectionState = corePlatform.getConnectionState(
+        userId,
+        targetUserId,
+        sourceIdentityKey,
+        targetIdentityKey
+      );
       try {
         connectionStateString = connectionState.get();
       } catch (InterruptedException | ExecutionException e) {
