@@ -84,5 +84,5 @@ server:
 
 microServices:
   corePlatformUrl: {COREPLATURL}
-  corePlatformUrlInternal: https://internal-elb-platform-core-qa.pillar.phz # {COREPLATURLINTERNAL}
+  corePlatformUrlInternal: {COREPLATURLINTERNAL}
   corePlatformCertPath: ../certs/platform_core_server_cert.pfx

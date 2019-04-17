@@ -41,10 +41,10 @@ public class CorePlatform {
         this.corePlatformUrl = config.getCorePlatformUrlInternal();
         try {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(new FileInputStream(config.getCorePlatformCertPath()), null);
+            keyStore.load(new FileInputStream(config.getCorePlatformCertPath()), "".toCharArray());
             SSLContext sslContext = SSLContexts
                 .custom()
-                .loadKeyMaterial(keyStore, null)
+                .loadKeyMaterial(keyStore, "".toCharArray())
                 .loadTrustMaterial(keyStore, new TrustSelfSignedStrategy())
                 .build();
             sslConnectionSocketFactory = new SSLConnectionSocketFactory(
