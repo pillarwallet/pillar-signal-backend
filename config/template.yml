@@ -84,3 +84,5 @@ server:
 
 microServices:
   corePlatformUrl: {COREPLATURL}
+  corePlatformUrlInternal: {COREPLATURLINTERNAL}
+  corePlatformCertPath: ../certs/platform_core_server_cert.pfx

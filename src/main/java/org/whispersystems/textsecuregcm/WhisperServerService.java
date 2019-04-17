@@ -222,7 +222,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     TwilioSmsSender          twilioSmsSender     = new TwilioSmsSender(config.getTwilioConfiguration());
     SmsSender                smsSender           = new SmsSender(twilioSmsSender);
     UrlSigner                urlSigner           = new UrlSigner(config.getAttachmentsConfiguration());
-    CorePlatform             corePlatform        = new CorePlatform(config.getMicroServicesConfiguration().getCorePlatformUrl());
+    CorePlatform             corePlatform        = new CorePlatform(config.getMicroServicesConfiguration());
     PushSender               pushSender          = new PushSender(apnFallbackManager, gcmSender, apnSender, websocketSender, config.getPushConfiguration().getQueueSize());
     ReceiptSender            receiptSender       = new ReceiptSender(accountsManager, pushSender, federatedClientManager);
     TurnTokenGenerator       turnTokenGenerator  = new TurnTokenGenerator(config.getTurnConfiguration());
