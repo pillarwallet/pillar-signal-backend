@@ -110,6 +110,7 @@ public class CorePlatform {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+            e.printStackTrace();
             logger.info("CorePlatform failed: " + ERROR_CORE_PLATFORM_FAILED);
             completableFuture.cancel(false);
         }
