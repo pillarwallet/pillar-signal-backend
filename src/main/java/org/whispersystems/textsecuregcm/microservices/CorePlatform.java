@@ -49,7 +49,7 @@ public class CorePlatform {
                 .build();
             sslConnectionSocketFactory = new SSLConnectionSocketFactory(
                 sslContext,
-                new String[]{"TLS", "SSL"},
+                new String[]{ "TLSv1", "TLSv1.1", "TLSv1.2", "SSLv3" },
                 null,
                 SSLConnectionSocketFactory.getDefaultHostnameVerifier()
             );
