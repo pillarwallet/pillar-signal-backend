@@ -2,6 +2,7 @@ package org.whispersystems.textsecuregcm.microservices;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -51,7 +52,7 @@ public class CorePlatform {
                 sslContext,
                 new String[]{ "TLSv1", "TLSv1.1", "TLSv1.2", "SSLv3" },
                 null,
-                SSLConnectionSocketFactory.getDefaultHostnameVerifier()
+                NoopHostnameVerifier.INSTANCE
             );
         } catch (IOException
                 | KeyStoreException
