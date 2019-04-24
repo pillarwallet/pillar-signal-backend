@@ -1,5 +1,6 @@
 package org.whispersystems.textsecuregcm.tests.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Before;
@@ -8,11 +9,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.whispersystems.dropwizard.simpleauth.AuthValueFactoryProvider;
 import org.whispersystems.textsecuregcm.controllers.KeysController;
-import org.whispersystems.textsecuregcm.entities.PreKey;
-import org.whispersystems.textsecuregcm.entities.PreKeyCount;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponse;
-import org.whispersystems.textsecuregcm.entities.PreKeyState;
-import org.whispersystems.textsecuregcm.entities.SignedPreKey;
+import org.whispersystems.textsecuregcm.entities.*;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.microservices.CorePlatform;
@@ -35,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.whispersystems.textsecuregcm.tests.util.JsonHelpers.jsonFixture;
 
 public class KeyControllerTest {
 
@@ -135,7 +133,12 @@ public class KeyControllerTest {
     when(AuthHelper.VALID_DEVICE.getSignedPreKey()).thenReturn(new SignedPreKey(89898, "zoofarb", "sigvalid"));
     when(AuthHelper.VALID_ACCOUNT.getIdentityKey()).thenReturn(null);
 
-    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
+    when(corePlatform.getConnectionState(
+        eq("user-id"),
+        eq("target-user-id"),
+        eq("source-identity-key"),
+        eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
 
   @Test
@@ -182,11 +185,9 @@ public class KeyControllerTest {
   public void validSingleRequestTestV2() throws Exception {
     PreKeyResponse result = resources.getJerseyTest()
                                      .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
-                                     .queryParam("userId", "user-id")
-                                     .queryParam("userConnectionAccessToken", "user-connection-access-token")
                                      .request()
                                      .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                                     .get(PreKeyResponse.class);
+                                     .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
 
     assertThat(result.getIdentityKey()).isEqualTo(existsAccount.getIdentityKey());
     assertThat(result.getDevicesCount()).isEqualTo(1);
@@ -202,11 +203,9 @@ public class KeyControllerTest {
   public void validMultiRequestTestV2() throws Exception {
     PreKeyResponse results = resources.getJerseyTest()
                                       .target(String.format("/v2/keys/%s/*", EXISTS_NUMBER))
-                                      .queryParam("userId", "user-id")
-                                      .queryParam("userConnectionAccessToken", "user-connection-access-token")
                                       .request()
                                       .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                                      .get(PreKeyResponse.class);
+                                      .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
 
     assertThat(results.getDevicesCount()).isEqualTo(3);
     assertThat(results.getIdentityKey()).isEqualTo(existsAccount.getIdentityKey());
@@ -329,15 +328,18 @@ public class KeyControllerTest {
 
   @Test
   public void connectionNotExistRequestTestV2() throws Exception {
-    when(corePlatform.getConnectionState(eq("user-id"), anyString())).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
+    when(corePlatform.getConnectionState(
+      eq("user-id"),
+      eq("not-existing-target-user-id"),
+      eq("source-identity-key"),
+      eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
 
     Response response = resources.getJerseyTest()
             .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
-            .queryParam("userId", "user-id")
-            .queryParam("userConnectionAccessToken", "not-existing-user-connection-access-token")
             .request()
             .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-            .get();
+            .put(Entity.entity(new ConnectionStateParams("user-id", "not-existing-target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE));
 
     assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(404);
   }

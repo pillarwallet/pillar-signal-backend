@@ -13,8 +13,22 @@ public class MicroServicesConfiguration {
   @JsonProperty
   private String corePlatformUrl;
 
+  @JsonProperty
+  private String corePlatformUrlInternal;
+
+  @JsonProperty
+  private String corePlatformCertPath;
+
   public String getCorePlatformUrl() {
     return corePlatformUrl;
+  }
+
+  public String getCorePlatformUrlInternal() {
+    return corePlatformUrlInternal;
+  }
+
+  public String getCorePlatformCertPath() {
+    return corePlatformCertPath;
   }
 
 }

@@ -12,11 +12,7 @@ import org.whispersystems.textsecuregcm.controllers.FederationControllerV1;
 import org.whispersystems.textsecuregcm.controllers.FederationControllerV2;
 import org.whispersystems.textsecuregcm.controllers.KeysController;
 import org.whispersystems.textsecuregcm.controllers.MessageController;
-import org.whispersystems.textsecuregcm.entities.IncomingMessageList;
-import org.whispersystems.textsecuregcm.entities.MessageProtos;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponseItem;
-import org.whispersystems.textsecuregcm.entities.PreKeyResponse;
-import org.whispersystems.textsecuregcm.entities.SignedPreKey;
+import org.whispersystems.textsecuregcm.entities.*;
 import org.whispersystems.textsecuregcm.federation.FederatedClientManager;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
@@ -99,10 +95,15 @@ public class FederatedControllerTest {
     when(rateLimiters.getMessagesLimiter()).thenReturn(rateLimiter);
 
     when(keysControllerV2.getSignedKey(any(Account.class))).thenReturn(Optional.of(signedPreKey));
-    when(keysControllerV2.getDeviceKeys(any(Account.class), anyString(), anyString(), any(Optional.class), any(Optional.class), any(Optional.class)))
+    when(keysControllerV2.getDeviceKeys(any(Account.class), anyString(), anyString(), any(Optional.class), any(ConnectionStateParams.class)))
         .thenReturn(Optional.of(preKeyResponseV2));
 
-    when(corePlatform.getConnectionState(eq("user-id"), eq("user-connection-access-token"))).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
+    when(corePlatform.getConnectionState(
+            eq("user-id"),
+            eq("target-user-id"),
+            eq("source-identity-key"),
+            eq("target-identity-key")
+    )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
 
   @Test
