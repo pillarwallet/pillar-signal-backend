@@ -170,6 +170,7 @@ public class WebSocketConnectionTest {
     WebsocketSender websocketSender = mock(WebsocketSender.class);
 
     when(pushSender.getWebSocketSender()).thenReturn(websocketSender);
+    when(websocketSender.queueMessage(any(Account.class), any(Device.class), any(Envelope.class), anyString())).thenReturn(10);
     when(websocketSender.queueMessage(any(Account.class), any(Device.class), any(Envelope.class))).thenReturn(10);
 
     Envelope firstMessage = Envelope.newBuilder()
@@ -232,11 +233,13 @@ public class WebSocketConnectionTest {
     connection.onDispatchSubscribed(websocketAddress.serialize());
     connection.onDispatchMessage(websocketAddress.serialize(), PubSubProtos.PubSubMessage.newBuilder()
                                                                                          .setType(PubSubProtos.PubSubMessage.Type.DELIVER)
+                                                                                         .setMessageTag(ByteString.copyFrom("message-tag".getBytes()))
                                                                                          .setContent(ByteString.copyFrom(firstMessage.toByteArray()))
                                                                                          .build().toByteArray());
 
     connection.onDispatchMessage(websocketAddress.serialize(), PubSubProtos.PubSubMessage.newBuilder()
                                                                                          .setType(PubSubProtos.PubSubMessage.Type.DELIVER)
+                                                                                         .setMessageTag(ByteString.copyFrom("message-tag".getBytes()))
                                                                                          .setContent(ByteString.copyFrom(secondMessage.toByteArray()))
                                                                                          .build().toByteArray());
 
@@ -250,7 +253,7 @@ public class WebSocketConnectionTest {
     futures.get(0).setException(new IOException());
 
     verify(receiptSender, times(1)).sendReceipt(eq(account), eq("sender2"), eq(secondMessage.getTimestamp()), eq(Optional.<String>absent()));
-    verify(websocketSender, times(1)).queueMessage(eq(account), eq(device), any(Envelope.class));
+    verify(websocketSender, times(1)).queueMessage(eq(account), eq(device), any(Envelope.class), eq("message-tag"));
     verify(pushSender, times(1)).sendQueuedNotification(eq(account), eq(device), eq(10), eq(true), eq(firstMessage.getSource()));
 
     connection.onDispatchUnsubscribed(websocketAddress.serialize());
@@ -266,7 +269,7 @@ public class WebSocketConnectionTest {
     reset(pushSender);
 
     when(pushSender.getWebSocketSender()).thenReturn(websocketSender);
-    when(websocketSender.queueMessage(any(Account.class), any(Device.class), any(Envelope.class))).thenReturn(10);
+    when(websocketSender.queueMessage(any(Account.class), any(Device.class), any(Envelope.class), any())).thenReturn(10);
 
     final Envelope firstMessage = Envelope.newBuilder()
                                     .setLegacyMessage(ByteString.copyFrom("first".getBytes()))

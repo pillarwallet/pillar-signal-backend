@@ -95,7 +95,7 @@ public class IncomingMessage {
   }
 
   public boolean isSilent() {
-    return silent;
+    return silent || (tag != null && tag.equals("tx-note"));
   }
 
   public String getTag() {

@@ -135,13 +135,13 @@ public class WebSocketConnection implements DispatchChannel {
             if (!isReceipt)                  sendDeliveryReceiptFor(message);
             if (requery)                     processStoredMessages();
           } else if (!isSuccessResponse(response) && !storedMessageId.isPresent()) {
-            requeueMessage(message);
+            requeueMessage(message, messageTag);
           }
         }
 
         @Override
         public void onFailure(@Nonnull Throwable throwable) {
-          if (!storedMessageId.isPresent()) requeueMessage(message);
+          if (!storedMessageId.isPresent()) requeueMessage(message, messageTag);
         }
 
         private boolean isSuccessResponse(WebSocketResponseMessage response) {
@@ -160,9 +160,11 @@ public class WebSocketConnection implements DispatchChannel {
     sendMessage(message, storedMessageId, requery, null);
   }
 
-  private void requeueMessage(Envelope message) {
-    int     queueDepth = pushSender.getWebSocketSender().queueMessage(account, device, message);
+  private void requeueMessage(Envelope message, String messageTag) {
+    int     queueDepth = pushSender.getWebSocketSender().queueMessage(account, device, message, messageTag);
     boolean fallback   = !message.getSource().equals(account.getNumber()) && message.getType() != Envelope.Type.RECEIPT;
+
+    if (messageTag != null && messageTag.equals("tx-note")) return;
 
     try {
       pushSender.sendQueuedNotification(account, device, queueDepth, fallback, message.getSource());
