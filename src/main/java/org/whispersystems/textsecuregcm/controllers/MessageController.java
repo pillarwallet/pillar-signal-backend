@@ -239,6 +239,8 @@ public class MessageController {
         e.printStackTrace();
       }
     }
+    logger.info("CONNECTION STATE: " + connectionStateString);
+    logger.info("incomingMessage.isSilent(): " + incomingMessage.isSilent());
     if (connectionStateString != null && !connectionStateString.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
         boolean silent = connectionStateString.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
         try {
