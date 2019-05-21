@@ -94,6 +94,7 @@ public class CorePlatform {
             String state = CONNECTION_STATE_BLOCKED;
             if (response.optJSONObject("targetConnection") == null) throw new IOException();
             JSONObject targetConnection = response.optJSONObject("targetConnection");
+            logger.info("CorePlatform status check | state: " + targetConnection.toString() + ", userId: " + userId + ", targetUserId: " + targetUserId + ", sourceIdentityKey: " + sourceIdentityKey + ", targetIdentityKey: " + targetIdentityKey);
             if (!targetConnection.isNull("status")){
                 switch (targetConnection.getString("status")){
                     case "muted":
