@@ -121,7 +121,7 @@
             <!--<version>0.1.4</version>-->
             <groupId>com.github.pillarwallet</groupId>
             <artifactId>gcm-sender-async</artifactId>
-            <version>a138aebdad</version>
+            <version>fcb3353cd5</version>
         </dependency>
 
         <dependency>
