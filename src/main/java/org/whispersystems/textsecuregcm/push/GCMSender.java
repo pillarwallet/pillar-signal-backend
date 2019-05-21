@@ -138,6 +138,7 @@ public class GCMSender implements Managed {
         } else if (!result.isSuccess()) {
           handleGenericError(result);
         } else {
+          logger.info("GCM SENT SUCCESS");
           success.mark();
         }
       }
