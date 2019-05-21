@@ -18,8 +18,12 @@ package org.whispersystems.textsecuregcm.entities;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IncomingMessage {
+
+  private final Logger logger = LoggerFactory.getLogger(IncomingMessage.class);
 
   @JsonProperty
   private int    type;
@@ -95,7 +99,9 @@ public class IncomingMessage {
   }
 
   public boolean isSilent() {
-    return silent || (tag != null && tag.equals("tx-note"));
+    String tagCheck = getTag();
+    logger.info("TAGS CHECK | raw: " + tag + ", getTag()" + tagCheck);
+    return silent || (tagCheck != null && tagCheck.equals("tx-note"));
   }
 
   public String getTag() {
