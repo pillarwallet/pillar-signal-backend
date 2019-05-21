@@ -73,6 +73,8 @@ public class GCMSender implements Managed {
   public void sendMessage(GcmMessage message, String sender) {
     Message.Builder builder = Message.newBuilder().withDestination(message.getGcmId());
 
+    logger.info("GCMSender.sendMessage OK");
+
     // token is short lived, flow recommended in Google API documentation,
     // token lifetime is 60 minutes, refresh if 2 left
     String fcmAccessToken = googleCredential.getAccessToken();
@@ -91,6 +93,8 @@ public class GCMSender implements Managed {
 
     String  key     = message.isReceipt() ? "receipt" : "notification";
     String collapseKey = "signal_" + message.getNumber();
+
+    logger.info("GCMSender.sendMessage OK: " + key + " " + message.getGcmId());
 
     JSONObject msgJSONO = new JSONObject();
     JSONObject apnsJSONO = new JSONObject();
@@ -127,6 +131,8 @@ public class GCMSender implements Managed {
 
     ListenableFuture<Result> future = signalSender.send(request, message);
     markOutboundMeter(key);
+
+    logger.info("GCMSender.sendMessage completed");
 
     Futures.addCallback(future, new FutureCallback<Result>() {
       @Override
