@@ -223,15 +223,11 @@ public class MessageController {
   {
     String userId = incomingMessage.getUserId();
     String targetUserId = incomingMessage.getTargetUserId();
-    String sourceIdentityKey = incomingMessage.getSourceIdentityKey();
-    String targetIdentityKey = incomingMessage.getTargetIdentityKey();
     String connectionStateString = CorePlatform.CONNECTION_STATE_ACCEPTED;
-    if (userId != null && targetUserId != null && sourceIdentityKey != null && targetIdentityKey != null) {
+    if (userId != null && targetUserId != null) {
       Future<String> connectionState = corePlatform.getConnectionState(
         userId,
-        targetUserId,
-        sourceIdentityKey,
-        targetIdentityKey
+        targetUserId
       );
       try {
         connectionStateString = connectionState.get();

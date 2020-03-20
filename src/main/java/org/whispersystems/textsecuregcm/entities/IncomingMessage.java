@@ -64,9 +64,11 @@ public class IncomingMessage {
   @JsonProperty
   private String targetUserId;
 
+  // left for legacy calls payload validation
   @JsonProperty
   private String sourceIdentityKey;
 
+  // left for legacy calls payload validation
   @JsonProperty
   private String targetIdentityKey;
 
@@ -114,14 +116,6 @@ public class IncomingMessage {
 
   public String getTargetUserId() {
     return targetUserId;
-  }
-
-  public String getSourceIdentityKey() {
-    return sourceIdentityKey;
-  }
-
-  public String getTargetIdentityKey() {
-    return targetIdentityKey;
   }
 
 }
