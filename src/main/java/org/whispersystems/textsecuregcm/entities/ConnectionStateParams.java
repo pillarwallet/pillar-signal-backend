@@ -27,20 +27,20 @@ public class ConnectionStateParams {
   @JsonProperty
   private String targetUserId;
 
+  // left for legacy calls payload validation
   @JsonProperty
   private String sourceIdentityKey;
 
+  // left for legacy calls payload validation
   @JsonProperty
   private String targetIdentityKey;
 
   public ConnectionStateParams() {}
 
   @VisibleForTesting
-  public ConnectionStateParams(String userId, String targetUserId, String sourceIdentityKey, String targetIdentityKey) {
+  public ConnectionStateParams(String userId, String targetUserId) {
     this.userId = userId;
     this.targetUserId = targetUserId;
-    this.sourceIdentityKey = sourceIdentityKey;
-    this.targetIdentityKey = targetIdentityKey;
   }
 
 
@@ -50,14 +50,6 @@ public class ConnectionStateParams {
 
   public String getTargetUserId() {
     return targetUserId;
-  }
-
-  public String getSourceIdentityKey() {
-    return sourceIdentityKey;
-  }
-
-  public String getTargetIdentityKey() {
-    return targetIdentityKey;
   }
 
 }
