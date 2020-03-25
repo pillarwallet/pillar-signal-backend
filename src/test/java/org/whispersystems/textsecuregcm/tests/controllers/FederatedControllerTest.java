@@ -100,9 +100,7 @@ public class FederatedControllerTest {
 
     when(corePlatform.getConnectionState(
             eq("user-id"),
-            eq("target-user-id"),
-            eq("source-identity-key"),
-            eq("target-identity-key")
+            eq("target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
 

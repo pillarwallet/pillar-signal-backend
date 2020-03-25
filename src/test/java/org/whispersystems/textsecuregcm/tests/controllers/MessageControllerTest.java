@@ -97,9 +97,7 @@ public class MessageControllerTest {
 
     when(corePlatform.getConnectionState(
       eq("user-id"),
-      eq("target-user-id"),
-      eq("source-identity-key"),
-      eq("target-identity-key")
+      eq("target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
   
@@ -298,9 +296,7 @@ public class MessageControllerTest {
   public void testConnectionMutedMessage() throws Exception {
     when(corePlatform.getConnectionState(
       eq("user-id"),
-      eq("muted-target-user-id"),
-      eq("source-identity-key"),
-      eq("target-identity-key")
+      eq("muted-target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_MUTED));
 
     Response response =
@@ -321,9 +317,7 @@ public class MessageControllerTest {
   public void testConnectionBlockedMessage() throws Exception {
     when(corePlatform.getConnectionState(
       eq("user-id"),
-      eq("blocked-target-user-id"),
-      eq("source-identity-key"),
-      eq("target-identity-key")
+      eq("blocked-target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
 
     Response response =
