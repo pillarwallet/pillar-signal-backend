@@ -59,7 +59,7 @@ jobs:
           command: |
             touch pillar-signal-backend.txt
             echo "$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz" > pillar-signal-backend.txt
-            /root/.local/bin/aws s3 cp pillar-signal-backend.txt $QA_RELEASE_BUCKET
+            aws --region $AWS_DEFAULT_REGION s3 cp pillar-signal-backend.txt $QA_RELEASE_BUCKET
       - run:
           name: Announce Deployment
           command: |
