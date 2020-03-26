@@ -170,9 +170,7 @@ public class KeysController {
   {
     Future<String> connectionState = corePlatform.getConnectionState(
       connectionStateParams.getUserId(),
-      connectionStateParams.getTargetUserId(),
-      connectionStateParams.getSourceIdentityKey(),
-      connectionStateParams.getTargetIdentityKey()
+      connectionStateParams.getTargetUserId()
     );
     try {
       if (connectionState.get().equals(CorePlatform.CONNECTION_STATE_BLOCKED))

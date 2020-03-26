@@ -223,15 +223,11 @@ public class MessageController {
   {
     String userId = incomingMessage.getUserId();
     String targetUserId = incomingMessage.getTargetUserId();
-    String sourceIdentityKey = incomingMessage.getSourceIdentityKey();
-    String targetIdentityKey = incomingMessage.getTargetIdentityKey();
     String connectionStateString = CorePlatform.CONNECTION_STATE_ACCEPTED;
-    if (userId != null && targetUserId != null && sourceIdentityKey != null && targetIdentityKey != null) {
+    if (userId != null && targetUserId != null) {
       Future<String> connectionState = corePlatform.getConnectionState(
         userId,
-        targetUserId,
-        sourceIdentityKey,
-        targetIdentityKey
+        targetUserId
       );
       try {
         connectionStateString = connectionState.get();
@@ -239,6 +235,8 @@ public class MessageController {
         e.printStackTrace();
       }
     }
+    logger.info("CONNECTION STATE: " + connectionStateString);
+    logger.info("incomingMessage.isSilent(): " + incomingMessage.isSilent());
     if (connectionStateString != null && !connectionStateString.equals(CorePlatform.CONNECTION_STATE_BLOCKED)){
         boolean silent = connectionStateString.equals(CorePlatform.CONNECTION_STATE_MUTED) || incomingMessage.isSilent();
         try {

@@ -135,9 +135,7 @@ public class KeyControllerTest {
 
     when(corePlatform.getConnectionState(
         eq("user-id"),
-        eq("target-user-id"),
-        eq("source-identity-key"),
-        eq("target-identity-key")
+        eq("target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_ACCEPTED));
   }
 
@@ -187,7 +185,7 @@ public class KeyControllerTest {
                                      .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
                                      .request()
                                      .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                                     .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
+                                     .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
 
     assertThat(result.getIdentityKey()).isEqualTo(existsAccount.getIdentityKey());
     assertThat(result.getDevicesCount()).isEqualTo(1);
@@ -205,7 +203,7 @@ public class KeyControllerTest {
                                       .target(String.format("/v2/keys/%s/*", EXISTS_NUMBER))
                                       .request()
                                       .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-                                      .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
+                                      .put(Entity.entity(new ConnectionStateParams("user-id", "target-user-id"), MediaType.APPLICATION_JSON_TYPE), PreKeyResponse.class);
 
     assertThat(results.getDevicesCount()).isEqualTo(3);
     assertThat(results.getIdentityKey()).isEqualTo(existsAccount.getIdentityKey());
@@ -330,16 +328,14 @@ public class KeyControllerTest {
   public void connectionNotExistRequestTestV2() throws Exception {
     when(corePlatform.getConnectionState(
       eq("user-id"),
-      eq("not-existing-target-user-id"),
-      eq("source-identity-key"),
-      eq("target-identity-key")
+      eq("not-existing-target-user-id")
     )).thenReturn(CompletableFuture.completedFuture(CorePlatform.CONNECTION_STATE_BLOCKED));
 
     Response response = resources.getJerseyTest()
             .target(String.format("/v2/keys/%s/1", EXISTS_NUMBER))
             .request()
             .header("Authorization", AuthHelper.getAuthHeader(AuthHelper.VALID_NUMBER, AuthHelper.VALID_PASSWORD))
-            .put(Entity.entity(new ConnectionStateParams("user-id", "not-existing-target-user-id", "source-identity-key", "target-identity-key"), MediaType.APPLICATION_JSON_TYPE));
+            .put(Entity.entity(new ConnectionStateParams("user-id", "not-existing-target-user-id"), MediaType.APPLICATION_JSON_TYPE));
 
     assertThat(response.getStatusInfo().getStatusCode()).isEqualTo(404);
   }

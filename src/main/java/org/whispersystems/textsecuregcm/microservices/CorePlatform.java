@@ -65,14 +65,14 @@ public class CorePlatform {
         }
     }
 
-    public Future<String> getConnectionState(String userId, String targetUserId, String sourceIdentityKey, String targetIdentityKey) {
+    public Future<String> getConnectionState(String userId, String targetUserId) {
         CompletableFuture<String> completableFuture = new CompletableFuture<>();
         CloseableHttpClient httpClient = null;
         try {
             httpClient = HttpClients.custom()
                     .setSSLSocketFactory(sslConnectionSocketFactory)
                     .build();
-            HttpGet httpGet = new HttpGet(String.format("%s/connection/v2?userId=%s&targetUserId=%s&sourceIdentityKey=%s&targetIdentityKey=%s", corePlatformUrl, userId, targetUserId, sourceIdentityKey, targetIdentityKey));
+            HttpGet httpGet = new HttpGet(String.format("%s/connection/v2?userId=%s&targetUserId=%s", corePlatformUrl, userId, targetUserId));
             httpGet.setHeader("Content-Type", "application/json; charset=UTF-8");
             httpGet.setHeader("User-Agent", "Signal-Java-Backend");
             HttpResponse httpResponse = httpClient.execute(httpGet);;
@@ -94,6 +94,7 @@ public class CorePlatform {
             String state = CONNECTION_STATE_BLOCKED;
             if (response.optJSONObject("targetConnection") == null) throw new IOException();
             JSONObject targetConnection = response.optJSONObject("targetConnection");
+            logger.info("CorePlatform status check | state: " + targetConnection.toString() + ", userId: " + userId + ", targetUserId: " + targetUserId);
             if (!targetConnection.isNull("status")){
                 switch (targetConnection.getString("status")){
                     case "muted":

@@ -1,24 +1,11 @@
-version: 2
+version: 2.1
+
+orbs:
+  slack: circleci/slack@3.4.2
+  aws-cli: circleci/aws-cli@0.1.17
+
 jobs:
-  whitesource:
-    working_directory: ~/pillar-signal-backend
-    docker:
-      - image: circleci/openjdk:8-node-browsers
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ~/pillar-signal-backend/workspace
-      - run :
-          name: Setup WhiteSource
-          command: curl -LJO https://github.com/whitesource/fs-agent-distribution/raw/master/standAlone/wss_agent.sh
-      - run:
-          name: execute whitesource
-          command: |
-            cd .whitesource/
-            chmod +x wss_agent.sh && ./wss_agent.sh -apiKey $WHITESOURCE_API_KEY -c ./whitesource-fs-agent.config  -project pillar-signal-backend -f files.list
-
   build-and-push-s3-qa:
-
     working_directory: ~/pillar-signal-backend # directory where steps will run
 
     docker: # run the steps with Docker
@@ -28,7 +15,6 @@ jobs:
       SIGNAL_VERSION: 1.66
 
     steps:
-
       - checkout # check out source code to working directory
 
       - run:
@@ -56,11 +42,12 @@ jobs:
 
       - run:
           name: install curl
-          command: apk update && apk add bash python python-dev py-pip -y sudo
-      - run:
-          name: Install AWS CLI
-          command: |
-            pip install awscli --upgrade --user
+          command: apk update && apk add bash python python-dev py-pip curl -y sudo
+      - aws-cli/install
+      - aws-cli/setup:
+          aws-access-key-id: STAGING_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: STAGING_AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
       - run:
           name: Publish Artifact and Notification
           command: |
@@ -72,17 +59,20 @@ jobs:
           command: |
             touch pillar-signal-backend.txt
             echo "$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz" > pillar-signal-backend.txt
-            export AWS_ACCESS_KEY_ID=$STAGING_AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$STAGING_AWS_SECRET_ACCESS_KEY
-            /root/.local/bin/aws s3 cp pillar-signal-backend.txt $STAGING_RELEASE_BUCKET
-            /root/.local/bin/aws s3 cp pillar-signal-backend.txt $QA_RELEASE_BUCKET
+            aws --region $AWS_DEFAULT_REGION s3 cp pillar-signal-backend.txt $QA_RELEASE_BUCKET
       - run:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
             .circleci/announceDeployment.sh "SIGNAL-BACKEND" "QA" "$(cat ./pillar-signal-backend.txt)"
-  build-production:
+      - slack/status:
+          fail_only: false
+          failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
+          success_message: "The *$CIRCLE_JOB* job has succeeded! :circleci-pass:"
+          only_for_branches: develop,master
+          webhook: "${SLACK_WEBHOOK_URL}"
 
+  build-production:
     working_directory: ~/pillar-signal-backend # directory where steps will run
 
     docker: # run the steps with Docker
@@ -92,7 +82,6 @@ jobs:
       SIGNAL_VERSION: 1.66
 
     steps:
-
       - checkout # check out source code to working directory
 
       - run:
@@ -118,19 +107,26 @@ jobs:
       - store_artifacts: # store the jar as an artifact
           path: target/TextSecureServer-1.66-bin.tar.gz
 
-
+      - run:
+          name: install curl
+          command: apk update && apk add bash python python-dev py-pip curl -y sudo
       - run:
           name: Publish Artifact and Notification
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
             chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
+      - slack/status:
+          fail_only: false
+          failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
+          success_message: "The *$CIRCLE_JOB* job has succeeded! :circleci-pass:"
+          only_for_branches: develop,master
+          webhook: "${SLACK_WEBHOOK_URL}"
 
 workflows:
-  version: 2
+  version: 2.1
   build_and_deploy:
     jobs:
-      - whitesource
       - build-and-push-s3-qa:
           filters:
             branches:
