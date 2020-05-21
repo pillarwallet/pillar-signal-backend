@@ -50,25 +50,8 @@ public class BearerTokenAuthFilter<P> extends AuthFilter<BasicCredentials, P> {
                         }
                         throw new InternalServerErrorException();
                     } else if ("Basic".equalsIgnoreCase(method)) {
-                        final String decoded = new String(
-                                BaseEncoding.base64().decode(header.substring(space + 1)),
-                                StandardCharsets.UTF_8);
-                        final int i = decoded.indexOf(':');
-                        if (i > 0) {
-                            final String username = decoded.substring(0, i);
-                            final String password = decoded.substring(i + 1);
-                            final BasicCredentials credentials = new BasicCredentials(username, password);
-                            try {
-                                Optional<P> principal = authenticator.authenticate(credentials);
-                                if (principal.isPresent()) {
-                                    requestContext.setSecurityContext(new AuthSecurityContext<P>(principal.get(), false));
-                                    return;
-                                }
-                            } catch (AuthenticationException e) {
-                                LOGGER.warn("Error authenticating credentials", e);
-                                throw new InternalServerErrorException();
-                            }
-                        }
+                        LOGGER.warn("Cannot authenticate with credentials");
+                        throw new InternalServerErrorException();
                     }
                 }
             }
