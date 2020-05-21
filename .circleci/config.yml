@@ -44,7 +44,6 @@ jobs:
       - run:
           name: install curl
           command: apk update && apk add bash python python-dev py-pip curl -y sudo
-      - aws-cli/install
       - aws-cli/setup:
           aws-access-key-id: STAGING_AWS_ACCESS_KEY_ID
           aws-secret-access-key: STAGING_AWS_SECRET_ACCESS_KEY
@@ -65,7 +64,7 @@ jobs:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
-            .circleci/announceDeployment.sh "SIGNAL-BACKEND" "QA" "$(cat ./pillar-signal-backend.txt)"
+            .circleci/announceDeployment.sh "Signal-Backend" "QA" "$(cat ./pillar-signal-backend.txt)"
       - slack/status:
           fail_only: false
           failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
@@ -73,7 +72,7 @@ jobs:
           only_for_branches: develop,master
           webhook: "${SLACK_WEBHOOK_URL}"
 
-  build-production:
+  build-and-push-s3-prod:
     working_directory: ~/pillar-signal-backend # directory where steps will run
 
     docker: # run the steps with Docker
@@ -112,12 +111,27 @@ jobs:
       - run:
           name: install curl
           command: apk update && apk add bash python python-dev py-pip curl -y sudo
+      - aws-cli/setup:
+          aws-access-key-id: PROD_AWS_ACCESS_KEY_ID
+          aws-secret-access-key: PROD_AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_DEFAULT_REGION
       - run:
           name: Publish Artifact and Notification
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
             chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
+      - run:
+          name: Push txt file to S3 bucket
+          command: |
+            touch pillar-signal-backend.txt
+            echo "$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz" > pillar-signal-backend.txt
+            aws --region $AWS_DEFAULT_REGION s3 cp pillar-signal-backend.txt $PROD_RELEASE_BUCKET
+      - run:
+          name: Announce Deployment
+          command: |
+            chmod +x .circleci/announceDeployment.sh
+            .circleci/announceDeployment.sh "Signal-Backend" "Prod" "$(cat ./pillar-signal-backend.txt)"
       - slack/status:
           fail_only: false
           failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
@@ -134,7 +148,7 @@ workflows:
             branches:
               only:
                 - develop
-      - build-production:
+      - build-and-push-s3-prod:
           filters:
             branches:
               only:
