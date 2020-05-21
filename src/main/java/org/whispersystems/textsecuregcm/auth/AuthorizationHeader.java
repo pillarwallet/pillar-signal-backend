@@ -45,18 +45,7 @@ public class AuthorizationHeader {
   }
 
   public static AuthorizationHeader fromUserAndPassword(String user, String password) throws InvalidAuthorizationHeaderException {
-    try {
-//      String[] numberAndId = user.split("\\.");
-//      return new AuthorizationHeader(numberAndId[0],
-//                                     numberAndId.length > 1 ? Long.parseLong(numberAndId[1]) : 1,
-//                                     password);
-//      commenting this out because username with dots gets split and can fail if username is contains another string,
-//      using string with dots is valid and safe approach
-
-      return new AuthorizationHeader(user, 1, password);
-    } catch (NumberFormatException nfe) {
-      throw new InvalidAuthorizationHeaderException(nfe);
-    }
+    throw new InvalidAuthorizationHeaderException("Invalid authorization header.");
   }
 
   public static AuthorizationHeader fromBearer(String bearerToken, RSAPublicKey publicKey) throws InvalidAuthorizationHeaderException {
@@ -89,7 +78,6 @@ public class AuthorizationHeader {
   }
 
   public static AuthorizationHeader fromFullHeader(String header, RSAPublicKey publicKey) throws InvalidAuthorizationHeaderException {
-    try {
       if (header == null) {
         throw new InvalidAuthorizationHeaderException("Null header");
       }
@@ -105,27 +93,7 @@ public class AuthorizationHeader {
         throw new InvalidAuthorizationHeaderException("Unsupported authorization method: " + headerParts[0]);
       }
 
-      if (publicKey != null && "Bearer".equals(headerParts[0])){
-        return fromBearer(headerParts[1], publicKey);
-      }
-
-      String concatenatedValues = new String(Base64.decode(headerParts[1]));
-
-      if (Util.isEmpty(concatenatedValues)) {
-        throw new InvalidAuthorizationHeaderException("Bad decoded value: " + concatenatedValues);
-      }
-
-      String[] credentialParts = concatenatedValues.split(":");
-
-      if (credentialParts == null || credentialParts.length < 2) {
-        throw new InvalidAuthorizationHeaderException("Badly formated credentials: " + concatenatedValues);
-      }
-
-      return fromUserAndPassword(credentialParts[0], credentialParts[1]);
-    } catch (IOException ioe) {
-      logger.error("InvalidAuthorizationHeaderException: " + ioe.getMessage());
-      throw new InvalidAuthorizationHeaderException(ioe);
-    }
+      return fromBearer(headerParts[1], publicKey);
   }
 
   public String getNumber() {

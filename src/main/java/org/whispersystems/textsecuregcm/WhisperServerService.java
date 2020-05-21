@@ -302,7 +302,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     filter.setInitParameter("allowCredentials", "true");
 
     // register toshi authentication filter
-    environment.jersey().register(new ToshiAuthenticationFilter());
+//    environment.jersey().register(new ToshiAuthenticationFilter());
 
     environment.healthChecks().register("directory", new RedisHealthCheck(directoryClient));
     environment.healthChecks().register("cache", new RedisHealthCheck(cacheClient));

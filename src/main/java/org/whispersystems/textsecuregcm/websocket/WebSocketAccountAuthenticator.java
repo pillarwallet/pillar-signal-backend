@@ -26,27 +26,14 @@ public class WebSocketAccountAuthenticator implements WebSocketAuthenticator<Acc
     try {
       List<String> subProtocols = request.getSubProtocols();
 
-      if (subProtocols.size() != 0){
+      if (subProtocols.size() != 0) {
         String bearerToken = subProtocols.get(0);
         if (bearerToken != null && !bearerToken.isEmpty()){
           return accountAuthenticator.authenticate(bearerToken);
         }
       }
 
-      Map<String, List<String>> parameters = request.getParameterMap();
-      List<String>              usernames  = parameters.get("login");
-      List<String>              passwords  = parameters.get("password");
-
-      if (usernames == null || usernames.size() == 0 ||
-          passwords == null || passwords.size() == 0)
-      {
-        return Optional.absent();
-      }
-
-      BasicCredentials credentials = new BasicCredentials(usernames.get(0).replace(" ", "+"),
-                                                          passwords.get(0).replace(" ", "+"));
-      
-      return accountAuthenticator.authenticate(credentials);
+      throw new AuthenticationException("Unable to authenticate.");
     } catch (io.dropwizard.auth.AuthenticationException e) {
       throw new AuthenticationException(e);
     }
