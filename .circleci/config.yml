@@ -54,7 +54,6 @@ jobs:
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND-QA" "$publishedArtifact"
       - run:
           name: Push txt file to S3 bucket
           command: |
@@ -129,7 +128,6 @@ jobs:
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
       - run:
           name: Push txt file to S3 bucket
           command: |
