@@ -3,6 +3,7 @@ version: 2.1
 orbs:
   slack: circleci/slack@3.4.2
   aws-cli: circleci/aws-cli@0.1.17
+  discord: antonioned/discord@0.0.4
 
 jobs:
   build-and-push-s3-qa:
@@ -53,7 +54,6 @@ jobs:
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND-QA" "$publishedArtifact"
       - run:
           name: Push txt file to S3 bucket
           command: |
@@ -64,13 +64,21 @@ jobs:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
+            chmod +x .circleci/announceDiscord.sh
             .circleci/announceDeployment.sh "Signal-Backend" "QA" "$(cat ./pillar-signal-backend.txt)"
+            .circleci/announceDiscord.sh "Signal-Backend" "QA" "$(cat ./pillar-signal-backend.txt)"
       - slack/status:
           fail_only: false
           failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
           success_message: "The *$CIRCLE_JOB* job has succeeded! :circleci-pass:"
           only_for_branches: develop,master
           webhook: "${SLACK_WEBHOOK_URL}"
+      - discord/status:
+          fail_only: true
+          failure_message: "Ooops! The **$CIRCLE_JOB** job has failed!"
+          success_message: "The **$CIRCLE_JOB** job has succeeded!"
+          only_for_branches: develop,master
+          webhook: "${DISCORD_WEBHOOK_URL}"
 
   build-and-push-s3-prod:
     working_directory: ~/pillar-signal-backend # directory where steps will run
@@ -120,7 +128,6 @@ jobs:
           command: |
             export publishedArtifact="$SIGNAL_ARTIFACTORY_URL/signal-backend-$CIRCLE_BUILD_NUM.tar.gz"
             curl -u $ARTIFACTORY_PUBLISHING_USER:$ARTIFACTORY_PUBLISHING_PASSWORD -T target/TextSecureServer-1.66-bin.tar.gz  $publishedArtifact
-            chmod +x .circleci/announceRelease.sh && .circleci/announceRelease.sh "SIGNAL-BACKEND" "$publishedArtifact"
       - run:
           name: Push txt file to S3 bucket
           command: |
@@ -131,13 +138,21 @@ jobs:
           name: Announce Deployment
           command: |
             chmod +x .circleci/announceDeployment.sh
+            chmod +x .circleci/announceDiscord.sh
             .circleci/announceDeployment.sh "Signal-Backend" "Prod" "$(cat ./pillar-signal-backend.txt)"
+            .circleci/announceDiscord.sh "Signal-Backend" "Prod" "$(cat ./pillar-signal-backend.txt)"
       - slack/status:
           fail_only: false
           failure_message: "Ooops! The *$CIRCLE_JOB* job has failed! :circleci-fail:"
           success_message: "The *$CIRCLE_JOB* job has succeeded! :circleci-pass:"
           only_for_branches: develop,master
           webhook: "${SLACK_WEBHOOK_URL}"
+      - discord/status:
+          fail_only: true
+          failure_message: "Ooops! The **$CIRCLE_JOB** job has failed!"
+          success_message: "The **$CIRCLE_JOB** job has succeeded!"
+          only_for_branches: develop,master
+          webhook: "${DISCORD_WEBHOOK_URL}"
 
 workflows:
   version: 2.1
